@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel = "icon" href = "assets/a-simple-vector-line-art-showing-a-robotic-kangar-preview_bgRemove.jpg" type = "image/x-icon">
+        
+  <meta charset="utf-8">
+  <meta name="description"
+        content="RoboHop: Segment-based Topological Map Representation for Open-World Visual Navigation">
+  <meta name="keywords" content="Mapping, Navigation, Segmentation, Graph, Open Vocabulary, Planning, Semantics, DINO, SAM, CLIP, LLM">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta property="og:image" content="assets/RoboHop_webpage_thumbnail.png" />        
+  <title>RoboHop: Segment-based Topological Map Representation for Open-World Visual Navigation </title>
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <!-- <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+    </div>
+
+  </div> -->
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-2 publication-title">RoboHop: Segment-based Topological Map Representation for Open-World Visual Navigation </h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://oravus.github.io/">Sourav Garg</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://krishanrana.github.io/">Krishan Rana*</a><sup>2</sup>,</span>
+              <span class="author-block">
+                <a href="https://www.adelaide.edu.au/directory/mehdi.hosseinzadeh">Mehdi Hosseinzadeh*</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://researchers.adelaide.edu.au/profile/lachlan.mares">Lachlan Mares*</a><sup>1</sup>,</span> 
+                <br>
+              <span class="author-block">
+              <a href="https://nikosuenderhauf.github.io/">Niko Suenderhauf</a><sup>2</sup>,</span>
+              <span class="author-block">
+                <a href="https://ferasdayoub.com/">Feras Dayoub</a><sup>1</sup>,</span>  
+              <span class="author-block">
+              <a href="https://scholar.google.com.au/citations?user=ATkNLcQAAAAJ&hl=en">Ian Reid</a><sup>1,3</sup></span>
+          </div>
+
+          <div class="is-size-6 publication-authors">
+            <span class="author-block"><sup>1</sup>The University of Adelaide</a>,
+              <sup>2</sup>QUT</a>,
+              <sup>3</sup>MBZUAI</a>,
+          </div>
+
+          <div class="is-size-7 publication-authors">
+            <span class="author-block">* denotes equal contribution</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="data/RoboHop_Garg2024_compressed_v3.pdf"
+                   class="external-link button is-normal ">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2405.05792"
+                   class="external-link button is-normal ">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://x.com/sourav_garg_/status/1718792706225529320?s=20"
+                   class="external-link button is-normal ">
+                   <span class="icon">
+                    <i class="fab fa-twitter"></i> <!-- This uses Font Awesome's Twitter icon -->
+                  </span>
+                  <span>X Thread</span>
+                </a>
+              </span>
+              <!-- Video Link. -->
+              <!-- <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal ">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span> -->
+              <!-- Code Link. -->
+              <!-- <span class="link-block">
+                <a href="https://github.com/oravus/RoboHop"
+                   class="external-link button is-normal ">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span> -->
+
+              <!-- Dataset Link. -->
+              <!-- <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal" disabled="true">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                  </a>
+            </div> -->
+
+            <h2 style="color: #ff2600ad;">
+              Presented at <a href="https://2024.ieee-icra.org/">ICRA 2024, Yokohama, Japan.<br/><b>Oral</b> presentation (only 4 out of 26) at <a href="https://leap-workshop.github.io/">CoRL 2023 Workshop LEAP</a>.
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <!-- <video id="teaser" autoplay muted loop playsinline height="100%"> -->
+        <!-- <img source src="./data/method_viz/Splash GIF.gif" /> -->
+        <video id="dinov2_gardens" autoplay controls muted loop playsinline height="100%">
+          <source src="./data/robohop_video_release-v1-trim-comp.mp4"
+                  type="video/mp4">
+        </video>
+      <!-- </video> -->
+      <h2 class="subtitle has-text-centered">
+        <span class="coolname">RoboHop</span> enables a segment-based topological map representation which can generate navigation plans from open-vocabulary queries in the form of <i>hops</i> over segments to reach the target goal, without the need for a learned policy.</span> 
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="hero is-light">
+  <div class="hero-body">
+  <!-- Paper video. -->
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-three-fifths">
+      <h2 class="title is-3">Perturbed Initializations</h2>
+      <video id="robohop_vid_init" autoplay controls muted loop playsinline height="100%">
+        <source src="./data/robohop_varyInit_with_markers.mp4"
+                type="video/mp4">
+      </video>
+    <h2 class="subtitle has-text-centered">
+      The underlying object-level reasoning of <span class="coolname">RoboHop</span> enables robustness to perturbations in its initialization. The robot is able to reach its destination ("ladder") despite variations in the viewpoint of its source node ("white triangular machine", please refer to the explainer video above for more details).
+    </h2>
+  </div>
+  </div>
+
+</section>
+
+<section class="hero is-small is-light">
+  <div class="hero-body">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Mapping is crucial for spatial reasoning, planning and robot navigation. Existing approaches range from metric, which require precise geometry-based optimization, to purely topological, where image-as-node based graphs lack explicit object-level reasoning and interconnectivity. In this paper, we propose a novel topological representation of an environment based on <i>image segments</i>, which are semantically meaningful and open-vocabulary queryable, conferring several advantages over previous works based on pixel-level features. Unlike 3D scene graphs, we create a purely topological graph but with segments as nodes, where edges are formed by <i>a)</i> associating segment-level descriptors between pairs of consecutive images and <i>b)</i> connecting neighboring segments within an image using their pixel centroids. This unveils a continuous sense of a `place', defined by inter-image persistence of segments along with their intra-image neighbours. It further enables us to represent and update segment-level descriptors through neighborhood aggregation using graph convolution layers, which improves robot localization based on segment-level retrieval. 
+            Using real-world data, we show how our proposed mapping can be used to generate navigation plans and actions in the form of <i></i>hops over segment tracks</i>, directly from natural language queries. Furthermore, we quantitatively analyze data association at the segment level, which underpins inter-image connectivity during mapping and segment-level localization when revisiting the same place. Finally, we show preliminary trials on segment-level `hopping' based zero-shot real-world navigation.
+          </p>
+        </div>
+      </div>
+    </div>
+    </div>
+    <!-- Paper video. -->
+    <!-- <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Video</h2>
+        <div class="publication-video">
+          <a id="overview_video"></a>
+          <iframe
+            src="./data/">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </div> -->
+    <!--/ Paper video. -->
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Method Pipeline</h2>
+        <div class="content has-text-justified">
+          <p> 
+            An illustration of our overall pipeline from image segments to mapping, open-vocabulary querying, and planning.
+          </p>
+          </div>
+      </div>
+    </div>
+    <div class="columns is-centered has-text-centered">
+      <img id="MethodPipeline" src = "data/RoboHop_pipeline.png" width="100%">
+    <div class="columns is-centered has-text-centered">
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">LLM-Based Relational Queries</h2>
+        <div class="content has-text-justified">
+          <p> 
+            Using our topological representation, plans can be generated from complex relational queries such as "locate the closest available seat to the Merlo's coffee shop", which exploits the map's ability to capture both intra- and inter-image spatial relationships not present in existing methods. The key here is to identify the <i>target</i> ("chairs or benches") and the <i>reference</i> (to that target, i.e., "the Merlo coffee shop") nodes in the scene based on the relational query. We do this by utilising an LLM appropriately prompted to parse the query and identify textual descriptions of these nodes-of-interest. The descriptions are then processed into feature vectors by CLIP's text encoder which are used to perform node retrieval across all nodes in the map. At this stage, there may be multiple reference and target nodes identified which satisfy the textual description. To satisfy the relational constraint and identify the appropriate target node, we compute the corresponding path length between all the identified reference and target nodes using Dijkstra's algorithm. The target node connected by the shortest path to the reference node is then selected as the node that satisfies the proximity constraint.
+          </p>
+          </div>
+      </div>
+    </div>
+    <div class="columns is-centered has-text-centered">
+      <img id="MethodPipeline" src = "data/Relational-queries.png" width="100%">
+    <div class="columns is-centered has-text-centered">
+  </div>
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">BibTeX</h2>
+    <pre><code>
+      @article{RoboHop,
+        author    = {Sourav Garg and Krishan Rana and Mehdi Hosseinzadeh and Lachlan Mares and Niko Suenderhauf and Feras Dayoub and Ian Reid}
+        title     = {RoboHop: Segment-based Topological Map Representation for Open-World Visual Navigation},
+        journal   = {arXiv},
+        year      = {2023},
+      }      
+    </code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+        <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website adapted from the Nerfies templates, which is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            If you use the <a href="">source code</a> of this website, please also link back to the <a href="https://github.com/nerfies/nerfies.github.io">Nerfies source code</a> in your footer.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
