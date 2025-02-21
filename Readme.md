@@ -73,3 +73,10 @@ then install with
 Submodule pixnav with
 
 `git submodule add https://github.com/wzcai99/Pixel-Navigator.git libs/pixnav`
+
+
+# Bibtex
+
+Please cite our work
+
+[//]: # (add citation)
