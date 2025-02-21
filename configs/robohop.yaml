@@ -25,7 +25,7 @@ infer_traversable: 0
 
 # logging and siplay
 log_robot: 1
-plot: 1
+plot: 0
 dump_episode_images: 0
 
 debug: 0

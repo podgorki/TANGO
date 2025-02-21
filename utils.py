@@ -88,13 +88,10 @@ def get_sim_agent(test_scene, updateNavMesh=False, agent_radius=0.75):
     sim.pathfinder.seed(42)
     agent_state.position = sim.pathfinder.get_random_navigable_point()
     agent.set_state(agent_state)
-    agent_state = agent.get_state()
-    print("agent_state: position", agent_state.position, "rotation", agent_state.rotation)
 
     # obtain the default, discrete actions that an agent can perform
     # default action space contains 3 actions: move_forward, turn_left, and turn_right
     action_names = list(cfg.agents[sim_settings["default_agent"]].action_space.keys())
-    print("Discrete action space: ", action_names)
 
     if updateNavMesh:
         # update navmesh to avoid tight spaces
