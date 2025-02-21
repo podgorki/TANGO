@@ -1,5 +1,7 @@
 #  TANGO: Traversablility-Aware Navigation with Local Metric Control for Topological Goals, ICRA25
 
+![d](https://github.com/podgorki/TANGO/blob/gh-pages/data/tango_pipeline.JPG)
+
 This is the official implementation of the paper. Please refer to the [website](https://podgorki.github.io/TANGO/)
 for and paper for more information including ROS implementation!
 
@@ -30,32 +32,44 @@ cd auto_agents/SegmentMap
 git clone https://github.com/AnyLoc/AnyLoc.git
 ```
 
-# Pixnav
+# Dependencies
 
-submodule pixnav with
-
-** git submodule add https://github.com/wzcai99/Pixel-Navigator.git libs/pixnav **
-
-# depth anything
+## Depth anything
 
 submodule depth anything with
 
-** git submodule add https://github.com/LiheYoung/Depth-Anything.git libs/depth/depth_anything **
+`git submodule add https://github.com/LiheYoung/Depth-Anything.git libs/depth/depth_anything`
 
 add libs.depth.depth_anything.metric_depth. to all zoedepth imports
 
-# lightglue
+## Lightglue
 
 submodule light glue with
 
-** git submodule add https://github.com/cvg/LightGlue.git libs/matcher/LightGlue **
+`git submodule add https://github.com/cvg/LightGlue.git libs/matcher/LightGlue`
 
-# segment anything
+# Segment Anything
 
 submodule SAM with
 
-** git submodule add https://github.com/facebookresearch/segment-anything.git libs/segmentor/segment_anything **
+`git submodule add https://github.com/facebookresearch/segment-anything.git libs/segmentor/segment_anything`
 
 then install with
 
-cd libs/segmentor/segment_anything; pip install -e .
+`cd libs/segmentor/segment_anything; pip install -e .`
+
+# Comparative method
+
+## Robohop
+
+[RoboHop: Segment-based Topological Map Representation for Open-World Visual Navigation](https://oravus.github.io/RoboHop/)
+
+## Pixnav
+
+[Pixnav: Bridging Zero-Shot Object Navigation and Foundation Models through Pixel-Guided Navigation Skill, ICRA 2024](https://github.com/wzcai99/Pixel-Navigator)
+
+### Setup
+
+Submodule pixnav with
+
+`git submodule add https://github.com/wzcai99/Pixel-Navigator.git libs/pixnav`
