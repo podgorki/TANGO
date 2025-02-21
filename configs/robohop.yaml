@@ -14,7 +14,7 @@ path_run: '' # '/storage/results/collaborations/robohop/results/val/hard/2024091
 split: 'val'  # train, val
 max_steps: 500
 threshold_goal_distance: 1.0  # in meters
-max_start_distance: 'easy'  # ['easy', 'hard', 'full']
+max_start_distance: 'hard'  # ['easy', 'hard', 'full']
 
 # controller and mapping params
 method: 'robohop+'

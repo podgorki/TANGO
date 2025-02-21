@@ -23,7 +23,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pathlib import Path
-# from ultralytics.models.fastsam import FastSAMPredictor
 import ultralytics.models.fastsam as fastsam
 from ultralytics.utils.ops import scale_masks
 from PIL import Image

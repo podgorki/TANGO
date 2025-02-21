@@ -1,12 +1,11 @@
 import numpy as np
 import networkx as nx
-import os
 import logging
 
 logger = logging.getLogger("[Planner]")
 
 
-class Plan_Topological:
+class PlanTopological:
     def __init__(self, mapGraph, goalNodeIdx):
 
         self.mapNodeWeightStr = "margin"

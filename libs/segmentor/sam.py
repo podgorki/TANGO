@@ -1,13 +1,11 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-import cv2
 import sys
+import cv2
+import matplotlib.pyplot as plt
 
 from libs.commons import utils_viz
 
 # INSTALL: cd segment-anything; pip install -e .
-from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+from libs.segmentor.segment_anything.segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
 
 class Seg_SAM:

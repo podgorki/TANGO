@@ -4,7 +4,7 @@ import numpy as np
 
 
 def run():
-    p = Path('/storage/results/collaborations/robohop/results/2024-19-01-54/')
+    p = Path('/storage/results/collaborations/robohop/results/new/val/easy/20250221-14-09-48_robohop+_gt_metric/')
     status_codes = ['success', 'exceeded_steps', 'no_traversable']
     steps = np.empty((len(list(p.glob('*.txt'))), 1))
     distance = np.empty((len(list(p.glob('*.txt'))), 1))
@@ -13,9 +13,9 @@ def run():
         try:
             with open(str(path_meta), 'r') as f:
                 meta = f.readlines()
-                steps[i] = int(meta[-1].strip('\n').split('=')[1])
-                distance[i] = float(meta[-2].strip('\n').split('=')[1])
-                stat = meta[-3].strip('\n').split('=')[1]
+                steps[i] = int(meta[-2].strip('\n').split('=')[1])
+                distance[i] = float(meta[-3].strip('\n').split('=')[1])
+                stat = meta[-4].strip('\n').split('=')[1]
                 status[i] = np.equal(np.repeat(stat, 3), status_codes)
         except IndexError:
             pass

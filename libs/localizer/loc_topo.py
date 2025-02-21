@@ -19,7 +19,7 @@ class Localize_Topological:
         self.nodeID_to_imgRegionIdx = np.array([mapGraph.nodes[node]['map'] for node in mapGraph.nodes()])
         self.mapImgPositions = mapImgPositions
 
-        self.matcher = matcher_lg.Match_LG(W, H)
+        self.matcher = matcher_lg.MatchLightGlue(W, H)
 
         self.reloc_rad = 5
         self.reloc_rad_add = 5

@@ -37,7 +37,7 @@ class Goal_Gen:
         self.localizer = loc_topo.Localize_Topological(
             f"{self.map_path}/images", self.G, self.W, self.H, mapImgPositions=self.positions
         )
-        self.planner_g = plan_topo.Plan_Topological(self.G, self.goalNodeIdx)
+        self.planner_g = plan_topo.PlanTopological(self.G, self.goalNodeIdx)
 
     def get_goal_mask(self, qryImg, qryNodes, qryPosition: Optional = None):
         self.qIter += 1

@@ -3,12 +3,6 @@ import numpy as np
 import heapq
 import torch
 import networkx as nx
-# from ccma import CCMA
-# import time
-# from numba import jit
-
-
-# pip3 install git+https://github.com/UniBwTAS/ccma.git#egg=ccma
 
 
 # guided by: https://www.redblobgames.com/pathfinding/a-star/implementation.html
@@ -75,7 +69,7 @@ class CostMapGraphNX:
         self.cost_map = cost_map - cost_map.min()
         self.graph = self.build_graph()
 
-   # @jit(forceobj=True, looplift=True)
+    # @jit(forceobj=True, looplift=True)
     def build_graph(self):
         xs, ys = np.meshgrid(range(self.width), range(self.height))
         xs = xs.reshape(-1)
