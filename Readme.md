@@ -1,3 +1,9 @@
+#  TANGO: Traversablility-Aware Navigation with Local Metric Control for Topological Goals, ICRA25
+
+This is the official implementation of the paper. Please refer to the [website](https://podgorki.github.io/TANGO/)
+for and paper for more information including ROS implementation!
+
+
 # Setup
 
 ```
