@@ -1,0 +1,12 @@
+[submodule "libs/pixnav"]
+	path = libs/pixnav
+	url = https://github.com/wzcai99/Pixel-Navigator.git
+[submodule "libs/depth/depth_anything"]
+	path = libs/depth/depth_anything
+	url = https://github.com/LiheYoung/Depth-Anything.git
+[submodule "libs/matcher/LightGlue"]
+	path = libs/matcher/LightGlue
+	url = https://github.com/cvg/LightGlue.git
+[submodule "libs/segmentor/segment_anything"]
+	path = libs/segmentor/segment_anything
+	url = https://github.com/facebookresearch/segment-anything.git

@@ -60,14 +60,14 @@ python scripts/hab_semantic_teleop.py
 
 submodule pixnav with
 
-**git submodule add https://github.com/wzcai99/Pixel-Navigator.git libs/pixnav**
+** git submodule add https://github.com/wzcai99/Pixel-Navigator.git libs/pixnav **
 
 
 # depth anything
 
 submodule depth anything with
 
-**git submodule add https://github.com/LiheYoung/Depth-Anything.git libs/depth/depth_anything**
+** git submodule add https://github.com/LiheYoung/Depth-Anything.git libs/depth/depth_anything **
 
 
 add libs.depth.depth_anything.metric_depth. to all zoedepth imports
@@ -77,13 +77,13 @@ add libs.depth.depth_anything.metric_depth. to all zoedepth imports
 
 submodule light glue with
 
-**git submodule add https://github.com/cvg/LightGlue.git libs/matcher/LightGlue**
+** git submodule add https://github.com/cvg/LightGlue.git libs/matcher/LightGlue **
 
 # segment anything
 
 submodule SAM with
 
-**https://github.com/facebookresearch/segment-anything.git**
+** git submodule add https://github.com/facebookresearch/segment-anything.git libs/segmentor/segment_anything **
 
 then install with 
 
