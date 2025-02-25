@@ -11,7 +11,7 @@ import cv2
 import habitat_sim
 
 
-def get_sim_settings(scene, method, default_agent=0, sensor_height=0.22, width=256, height=256):
+def get_sim_settings(scene, method, default_agent=0, sensor_height=0.4, width=320, height=256):
     hfov = 120 if 'robohop' in method.lower() else 79
     sim_settings = {
         "scene": scene,  # Scene path

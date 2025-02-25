@@ -4,7 +4,7 @@ import numpy as np
 
 
 def run():
-    p = Path('/storage/results/collaborations/robohop/results/new/val/easy/20250221-14-09-48_robohop+_gt_metric/')
+    p = Path('')
     status_codes = ['success', 'exceeded_steps', 'no_traversable']
     steps = np.empty((len(list(p.glob('*.txt'))), 1))
     distance = np.empty((len(list(p.glob('*.txt'))), 1))
