@@ -12,7 +12,11 @@ import habitat_sim
 
 
 def get_sim_settings(scene, method, default_agent=0, sensor_height=0.4, width=320, height=256):
-    hfov = 120 if 'robohop' in method.lower() else 79
+    if 'robohop' in method.lower():
+        hfov = 79
+        sensor_height = 0.88
+    else:
+        hfov = 120
     sim_settings = {
         "scene": scene,  # Scene path
         "default_agent": default_agent,  # Index of the default agent
@@ -48,6 +52,16 @@ def make_simple_cfg(settings):
     # hardware_config.height = 20  # Setting the height to 1.6 meters
     # hardware_config.radius = 10  # Setting the radius to 0.2 meters
 
+    # discrete actions defined for objectnav task in habitat-lab/habitat/config/habitat/task/objectnav.yaml
+    custom_action_dict = {'stop': habitat_sim.ActionSpec(name='move_forward', actuation=habitat_sim.ActuationSpec(amount=0))}
+    for k in hardware_config.action_space.keys():
+        custom_action_dict[k] = hardware_config.action_space[k]
+    custom_action_dict['look_up'] = habitat_sim.ActionSpec(name='look_up',
+                                                           actuation=habitat_sim.ActuationSpec(amount=30))
+    custom_action_dict['look_down'] = habitat_sim.ActionSpec(name='look_down',
+                                                             actuation=habitat_sim.ActuationSpec(amount=30))
+
+    hardware_config.action_space = custom_action_dict
     # In the 1st example, we attach only one sensor,
     # a RGB visual sensor, to the agent
     rgb_sensor_spec = habitat_sim.CameraSensorSpec()
