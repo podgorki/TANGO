@@ -60,7 +60,7 @@ def load_run_list(args, path_episode_root) -> list:
     return episodes
 
 
-def setup_sim(path_scene: Path) -> tuple:
+def setup_sim(path_scene: Path, method) -> tuple:
     os.environ["MAGNUM_LOG"] = "quiet"
     os.environ["HABITAT_SIM_LOG"] = "quiet"
 
@@ -72,7 +72,9 @@ def setup_sim(path_scene: Path) -> tuple:
     # get the scene
     update_nav_mesh = False
     test_scene = str(sorted(path_scene.glob('*basis.glb'))[0])
-    sim, agent, vel_control = utils.get_sim_agent(test_scene, update_nav_mesh)
+    sim, agent, vel_control, sim_settings = utils.get_sim_agent(
+        test_scene=test_scene, updateNavMesh=update_nav_mesh, method=method
+    )
     sim.agents[0].agent_config.sensor_specifications[1].normalize_depth = True
 
     # create and configure a new VelocityControl structure
@@ -82,7 +84,7 @@ def setup_sim(path_scene: Path) -> tuple:
     vel_control.controlling_ang_vel = True
     vel_control.ang_vel_is_local = True
 
-    return sim, agent, vel_control
+    return sim, agent, vel_control, sim_settings
 
 
 def closest_state(sim, agent_states, distance_threshold: float):
@@ -129,19 +131,16 @@ def run(args):
             raise FileNotFoundError(f'{path_zoe_depth} not found...')
         depth_model = DepthAnythingMetricModel(depth_model_name, pretrained_resource=str(path_zoe_depth))
 
-    for ei, episode in tqdm(enumerate(episodes)):
+    for ei, episode in tqdm(enumerate(episodes[1:])):
         # set these now incase an episode fails
         success_status = 'exceeded_steps'
-        distance_to_goal = np.nan
         step = np.nan
         time_delta = 0.1
         theta_control = np.nan
         velocity_control = 0.05 if 'robohop' in args.method.lower() else np.nan
-        fov_deg = 120 if 'robohop' in args.method.lower() else 79
-        hfov_radians = np.pi * fov_deg / 180
         pid_steer_values = [.25, 0, 0] if args.method.lower() == 'robohop+' else []
         discrete_action = -1
-
+        distance_to_goal = np.nan
         scene_name = episode.parts[-1].split('_')[0]
         print(episode)
         path_scene = sorted(path_scenes_root.glob(f'*{scene_name}'))[0]
@@ -152,14 +151,18 @@ def run(args):
         try:
             # setup sim, experiment etc
             max_steps = args.max_steps
-            sim, agent, vel_control = setup_sim(path_scene)
-
+            sim, agent, vel_control, sim_settings = setup_sim(path_scene, args.method)
+            fov_deg = sim_settings['hfov']
+            hfov_radians = np.pi * fov_deg / 180
+            print(sim_settings)
             # setup is/is not traversable and which goals are banned (for the simulator runs)
             sem_insta_2_cat_map = utils.get_instance_to_category_mapping(sim.semantic_scene)
-            traversable_categories = [
-                'floor', 'floor mat', 'floor vent', 'carpet', 'rug', 'doormat', 'shower floor', 'pavement', 'ground'
-            ]
             if args.goal_source.lower() == 'topological':
+                traversable_categories = [
+                    'floor', 'flooring', 'floor mat', 'floor vent', 'carpet', 'mat', 'rug', 'doormat',
+                    'shower floor', 'pavement', 'ground', 'tiles'
+                ]
+            else:
                 traversable_categories = [
                     'floor', 'flooring', 'floor mat', 'floor vent', 'carpet', 'mat', 'rug', 'doormat',
                     'shower floor', 'pavement', 'ground', 'tiles'

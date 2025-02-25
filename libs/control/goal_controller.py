@@ -45,8 +45,7 @@ class GoalControl:
         self.grid_max = torch.tensor([5, 10, 10], device=self.device)
         self.cells = ((self.grid_max - self.grid_min) / self.grid_size).to(int)
         self.w_bev, self.h_bev = self.cells[2].item(), self.cells[0].item()
-        self.grid_shift = torch.tensor([self.h_bev // 2, -10], dtype=torch.long, device=self.device)
-        # self.grid_shift = torch.tensor([self.h_bev // 2, 0], dtype=torch.long, device=self.device)
+        self.grid_shift = torch.tensor([self.h_bev // 2, -2], dtype=torch.long, device=self.device)  #todo: make the z roll be auto calculated
         self.start_bev = (self.w_bev // 2, 0)
         self.x_bev_range = torch.arange(
             self.grid_min[0].item(), self.grid_max[0].item(), self.grid_size
@@ -54,7 +53,7 @@ class GoalControl:
         self.z_bev_range = torch.arange(
             self.grid_min[2].item(), self.grid_max[2].item(), self.grid_size
         ).round(decimals=3)
-        self.kernel_erode = torch.ones((4, 4), device=self.device)
+        self.kernel_erode = torch.ones((2, 2), device=self.device)
         self.occupied = torch.zeros(
             self.h_bev, self.w_bev,
             device=self.device, requires_grad=False, dtype=torch.long
@@ -181,8 +180,8 @@ class GoalControl:
         self.bev_relative = traversable_relative_bev_safe.squeeze(0, 1).cpu().numpy()
         if self.check_if_traversable(traversable_relative_bev_safe):
             # convert to occupancy (1: occupied, 0 free space)
-            cost_map_relative_bev_safe = K.filters.gaussian_blur2d(
-                traversable_relative_bev_safe, (5, 5), (3, 3)
+            cost_map_relative_bev_safe = K.filters.box_blur(
+                traversable_relative_bev_safe, (5, 5), #(3, 3)
             ).squeeze(0, 1)  # soften edges to help keep robot from hitting wall
 
             cost_scaler = 1000
@@ -201,7 +200,7 @@ class GoalControl:
                 height=self.h_bev,
                 cost_map=cost_map_relative_bev_safe.cpu().numpy()
             )
-            path_traversable_bev = cmg.get_path(self.start_bev, goal_bev)[5:]
+            path_traversable_bev = cmg.get_path(self.start_bev, goal_bev)#[5:]
             if path_traversable_bev.shape[0] > 1:
                 self.point_poses = self.get_point_poses_numpy(path_traversable_bev)
                 # find the theta control signal: thetaj current pose, thetai target pose

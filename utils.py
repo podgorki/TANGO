@@ -11,11 +11,12 @@ import cv2
 import habitat_sim
 
 
-def get_sim_settings(scene, default_agent=0, sensor_height=1.5, width=256, height=256, hfov=90):
+def get_sim_settings(scene, method, default_agent=0, sensor_height=0.22, width=256, height=256):
+    hfov = 120 if 'robohop' in method.lower() else 79
     sim_settings = {
         "scene": scene,  # Scene path
         "default_agent": default_agent,  # Index of the default agent
-        "sensor_height": sensor_height,  # Height of sensors in meters, relative to the agent
+        "sensor_height": sensor_height,  # Height of sensors in meters, relative to the agent #,
         "width": width,  # Spatial resolution of the observations
         "height": height,
         "hfov": hfov
@@ -76,10 +77,10 @@ def make_simple_cfg(settings):
     return habitat_sim.Configuration(sim_cfg, [hardware_config])
 
 
-def get_sim_agent(test_scene, updateNavMesh=False, agent_radius=0.75):
-    sim_settings = get_sim_settings(scene=test_scene)
-    cfg = make_simple_cfg(sim_settings)
-    sim = habitat_sim.Simulator(cfg)
+def get_sim_agent(test_scene, method, updateNavMesh=False, agent_radius=0.75):
+    sim_settings = get_sim_settings(scene=test_scene, method=method)
+    sim_config = make_simple_cfg(sim_settings)
+    sim = habitat_sim.Simulator(sim_config)
 
     # initialize an agent
     agent = sim.initialize_agent(sim_settings["default_agent"])
@@ -91,7 +92,7 @@ def get_sim_agent(test_scene, updateNavMesh=False, agent_radius=0.75):
 
     # obtain the default, discrete actions that an agent can perform
     # default action space contains 3 actions: move_forward, turn_left, and turn_right
-    action_names = list(cfg.agents[sim_settings["default_agent"]].action_space.keys())
+    action_names = list(sim_config.agents[sim_settings["default_agent"]].action_space.keys())
 
     if updateNavMesh:
         # update navmesh to avoid tight spaces
@@ -101,7 +102,7 @@ def get_sim_agent(test_scene, updateNavMesh=False, agent_radius=0.75):
         navmesh_success = sim.recompute_navmesh(sim.pathfinder, navmesh_settings)
         # sim_topdown_map = sim.pathfinder.get_topdown_view(0.1, 0)
 
-    return sim, agent, action_names
+    return sim, agent, action_names, sim_settings
 
 
 def getK_fromParams(hfovDeg, width, height):
