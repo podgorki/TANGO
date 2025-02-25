@@ -55,11 +55,11 @@ class TangoControl:
             self.grid_min[2].item(), self.grid_max[2].item(), self.grid_size
         ).round(decimals=3)
         self.kernel_erode = torch.ones((2, 2), device=self.device)
-        self.occupied = torch.zeros(
+        self.occupied_bev = torch.zeros(
             self.h_bev, self.w_bev,
             device=self.device, requires_grad=False, dtype=torch.long
         )
-        self.free = torch.zeros(
+        self.free_bev = torch.zeros(
             self.h_bev, self.w_bev,
             device=self.device, requires_grad=False, dtype=torch.long
         )
@@ -97,18 +97,18 @@ class TangoControl:
         unprojected_points = unprojected_points[mask_in_range]
         traversable = traversable[mask_in_range]
         xy_t_ij = torch.floor(unprojected_points / self.grid_size).to(torch.long)[:, 0::2] + self.grid_shift
-        self.occupied.zero_()
-        self.free.zero_()
-        self.occupied = (
-                self.occupied.to(torch.long).index_put_((xy_t_ij[:, 1], xy_t_ij[:, 0]),
+        self.occupied_bev.zero_()
+        self.free_bev.zero_()
+        self.occupied_bev = (
+                self.occupied_bev.to(torch.long).index_put_((xy_t_ij[:, 1], xy_t_ij[:, 0]),
                                                         torch.logical_not(traversable).long(),
                                                         accumulate=True) > 0
         ).int()
-        self.free = (
-                self.free.to(torch.long).index_put_((xy_t_ij[:, 1], xy_t_ij[:, 0]), traversable.long(),
+        self.free_bev = (
+                self.free_bev.to(torch.long).index_put_((xy_t_ij[:, 1], xy_t_ij[:, 0]), traversable.long(),
                                                     accumulate=True) > 0
         ).int()
-        occupancy = (self.free - self.occupied).clip(0, 1)
+        occupancy = (self.free_bev - self.occupied_bev).clip(0, 1)
         return occupancy.float()
 
     @staticmethod
