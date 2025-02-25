@@ -9,7 +9,7 @@ from libs.utils import unproject_points
 from libs.control.robohop import control_with_mask
 
 
-class GoalControl:
+class TangoControl:
 
     @torch.inference_mode
     def __init__(self, pid_steer, traversable_classes, default_velocity_control: float,
@@ -45,7 +45,8 @@ class GoalControl:
         self.grid_max = torch.tensor([5, 10, 10], device=self.device)
         self.cells = ((self.grid_max - self.grid_min) / self.grid_size).to(int)
         self.w_bev, self.h_bev = self.cells[2].item(), self.cells[0].item()
-        self.grid_shift = torch.tensor([self.h_bev // 2, -2], dtype=torch.long, device=self.device)  #todo: make the z roll be auto calculated
+        self.grid_shift = torch.tensor([self.h_bev // 2, -2], dtype=torch.long,
+                                       device=self.device)  # todo: make the z roll be auto calculated
         self.start_bev = (self.w_bev // 2, 0)
         self.x_bev_range = torch.arange(
             self.grid_min[0].item(), self.grid_max[0].item(), self.grid_size
@@ -158,7 +159,8 @@ class GoalControl:
     def check_if_traversable(traversable_relative_bev: torch.Tensor) -> bool:
         return traversable_relative_bev.sum() > 10
 
-    def control(self, depth: np.ndarray, robohop_control: np.ndarray, goal_mask: np.ndarray, traversable_mask: np.ndarray) -> float:
+    def control(self, depth: np.ndarray, robohop_control: np.ndarray, goal_mask: np.ndarray,
+                traversable_mask: np.ndarray) -> float:
         depth = torch.from_numpy(depth).to(self.device)
         goal_mask = torch.from_numpy(goal_mask).to(self.device)
         point_goal_bev = self.compute_goal_point(depth, goal_mask)
@@ -181,7 +183,7 @@ class GoalControl:
         if self.check_if_traversable(traversable_relative_bev_safe):
             # convert to occupancy (1: occupied, 0 free space)
             cost_map_relative_bev_safe = K.filters.box_blur(
-                traversable_relative_bev_safe, (5, 5), #(3, 3)
+                traversable_relative_bev_safe, (5, 5),  # (3, 3)
             ).squeeze(0, 1)  # soften edges to help keep robot from hitting wall
 
             cost_scaler = 1000
@@ -200,7 +202,7 @@ class GoalControl:
                 height=self.h_bev,
                 cost_map=cost_map_relative_bev_safe.cpu().numpy()
             )
-            path_traversable_bev = cmg.get_path(self.start_bev, goal_bev)#[5:]
+            path_traversable_bev = cmg.get_path(self.start_bev, goal_bev)  # [5:]
             if path_traversable_bev.shape[0] > 1:
                 self.point_poses = self.get_point_poses_numpy(path_traversable_bev)
                 # find the theta control signal: thetaj current pose, thetai target pose

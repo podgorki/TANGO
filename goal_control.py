@@ -13,7 +13,7 @@ import logging
 import time
 import yaml
 from libs.control.pid import SteerPID
-from libs.control.goal_controller import GoalControl
+from libs.control.tango import TangoControl
 from libs.control.robohop import control_with_mask
 from libs.depth.depth_anything_metric_model import DepthAnythingMetricModel
 from libs.goal_generator import goal_gen
@@ -257,7 +257,7 @@ def run(args):
                     Ki=pid_steer_values[1],
                     Kd=pid_steer_values[2]
                 )
-                goal_controller = GoalControl(
+                goal_controller = TangoControl(
                     traversable_classes=traversable_classes,
                     pid_steer=pid_steer,
                     default_velocity_control=velocity_control,
