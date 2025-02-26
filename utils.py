@@ -13,10 +13,13 @@ import habitat_sim
 
 def get_sim_settings(scene, method, default_agent=0, sensor_height=0.4, width=320, height=256):
     if 'robohop' in method.lower():
+        hfov = 120
+    else:
+        # Pixnav's highest performing model settings
         hfov = 79
         sensor_height = 0.88
-    else:
-        hfov = 120
+        width = 640
+        height = 480
     sim_settings = {
         "scene": scene,  # Scene path
         "default_agent": default_agent,  # Index of the default agent
