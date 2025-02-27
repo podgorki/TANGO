@@ -4,13 +4,6 @@
 conda create -n tango-habitat python=3.9 cmake=3.14.0
 conda activate tango-habitat
 
-# install habitat-lab
-cd libs/
-git clone https://github.com/facebookresearch/habitat-lab.git
-cd habitat-lab/
-git checkout v0.2.4
-pip install -e habitat-lab
-
 # (# Download SegmentMap repository from https://universityofadelaide.box.com/s/rbge9q7mv0alucvqjelx8odisw59mehm and place it in .`/auto_agents/`)
 
 # install RoboHop dependencies (assumed SegmentMap folder is already copied over or downloaded from github)
@@ -23,6 +16,19 @@ pip install -e .
 cd auto_agents/SegmentMap
 git clone https://github.com/AnyLoc/AnyLoc.git
 ```
+
+# Habitat-lab
+
+submodule habitat-lab
+
+```
+git submodule add https://github.com/facebookresearch/habitat-lab.git libs/habitat-lab`
+cd libs/habitat-lab/
+git checkout v0.2.4
+pip install -e habitat-lab
+```
+
+
 
 # Pixnav
 

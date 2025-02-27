@@ -18,7 +18,7 @@ from libs.commons import utils, utils_data, utils_viz
 
 class Goal_Gen:
 
-    def __init__(self, W: int, H: int, G, map_path, poses: Optional = None, ):
+    def __init__(self, W: int, H: int, G, map_path, task_type, poses: Optional = None, ):
         self.W = W
         self.H = H
         self.max_pl = 100
@@ -33,7 +33,7 @@ class Goal_Gen:
         utils.change_edge_attr(self.G)
         self.nodeID_to_imgRegionIdx = np.array([self.G.nodes[node]['map'] for node in self.G.nodes()])
 
-        self.goalNodeIdx = utils_data.get_goalNodeIdx(self.map_path, self.G, self.nodeID_to_imgRegionIdx)
+        self.goalNodeIdx = utils_data.get_goalNodeIdx(self.map_path, self.G, self.nodeID_to_imgRegionIdx, task_type)
         self.localizer = loc_topo.Localize_Topological(
             f"{self.map_path}/images", self.G, self.W, self.H, mapImgPositions=self.positions
         )

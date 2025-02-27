@@ -10,3 +10,6 @@
 [submodule "libs/segmentor/segment_anything"]
 	path = libs/segmentor/segment_anything
 	url = https://github.com/facebookresearch/segment-anything.git
+[submodule "libs/habitat-lab"]
+	path = libs/habitat-lab
+	url = https://github.com/facebookresearch/habitat-lab.git

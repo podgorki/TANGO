@@ -846,3 +846,11 @@ def get_pathlength_GT(sim, agent, depth, semantic, goalPosition_w, randColors=No
         plt.colorbar()
         plt.show()
     return pls, plsDict, plsImg
+
+
+def get_agent_rotation_from_two_positions(position_src, position_dst):
+    tangent = position_src - position_dst
+    theta = np.arctan2(tangent[0], tangent[2])
+    # need to negate angle for habitat's coordinate system
+    rotation = quat_from_magnum(mn.Quaternion.rotation(mn.Rad(theta), mn.Vector3([0,1,0])))
+    return rotation

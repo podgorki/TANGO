@@ -422,3 +422,4 @@ def getImg(sim):
     if "semantic_sensor" in observations:
         semantic = observations["semantic_sensor"]
     return rgb, depth, semantic
+
