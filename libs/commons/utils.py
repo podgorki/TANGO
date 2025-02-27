@@ -111,3 +111,7 @@ def nodes2key(nodeInds, key, G=None):
     if key == 'coords':
         values = np.array([np.array(np.nonzero(v)).mean(1)[::-1].astype(int) for v in values])
     return values
+
+def get_instance_index_to_name_mapping(semanticScene):
+    instance_index_to_name = np.array([[i, obj.category.name()] for i, obj in enumerate(semanticScene.objects)])
+    return instance_index_to_name
