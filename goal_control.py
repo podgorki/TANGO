@@ -207,6 +207,7 @@ def run(args):
             )
             # select the goal source for ablation studies
             if args.goal_source.lower() in ['gt_topological', 'topological']:  # load robohop graph
+                print(args.goal_source.lower())
                 if args.goal_source.lower() == 'topological':
                     path_graph = episode / 'nodes_fast_sam_graphObject_4_lightglue.pickle'
                 else:
@@ -221,6 +222,7 @@ def run(args):
                         H=image_height,
                         G=map_graph,
                         map_path=str(episode),
+                        task_type='original',
                         poses=agent_states
                     )
                     if args.segmentor.lower() == 'sam':
