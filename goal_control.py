@@ -131,7 +131,7 @@ def run(args):
             raise FileNotFoundError(f'{path_zoe_depth} not found...')
         depth_model = DepthAnythingMetricModel(depth_model_name, pretrained_resource=str(path_zoe_depth))
 
-    for ei, episode in tqdm(enumerate(episodes[1:])):
+    for ei, episode in tqdm(enumerate(episodes)):
         # set these now incase an episode fails
         success_status = 'exceeded_steps'
         step = np.nan
