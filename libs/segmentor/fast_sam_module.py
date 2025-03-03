@@ -21,8 +21,10 @@ import torch.nn.functional as F
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 
 from pathlib import Path
+# from ultralytics.models.fastsam import FastSAMPredictor
 import ultralytics.models.fastsam as fastsam
 from ultralytics.utils.ops import scale_masks
 from PIL import Image
@@ -32,7 +34,7 @@ import kornia as K
 
 
 class FastSamClass:
-    def __init__(self, config_settings: dict, device: str, traversable_categories: list = None):
+    def __init__(self, config_settings: dict, device: str = 'cuda', traversable_categories: list = None):
         root_dir = Path(__file__).resolve().parents[1]
         model_dir = root_dir / 'models'
         self.device = device
@@ -40,6 +42,7 @@ class FastSamClass:
         self.image_height = config_settings["height"]
         self.mask_height = config_settings["mask_height"]
         self.mask_width = config_settings["mask_width"]
+        self.no_mask = np.zeros((self.image_height, self.image_width), dtype=np.uint8)
 
         overrides = dict(conf=config_settings["conf"],
                          task="segment",
@@ -59,16 +62,18 @@ class FastSamClass:
 
     @torch.inference_mode()
     def segment(self, image: np.array, retMaskAsDict: bool = True, textLabels: list = []) -> tuple:
-        results = self.predictor(image)
-        traversable_results = self.prompt(results, texts=self.traversable_categories)
-        results = results[0]
+        results = self.predictor(image)[0]
         if results.masks is None:
             print(f"No masks found")
-            return None if retMaskAsDict else [None, None]
+            return None, None, self.no_mask
+        if len(self.traversable_categories) != 0:
+            traversable_results, _, _ = self.prompt([results], texts=self.traversable_categories)
+        else:
+            traversable_results = []
 
         if len(textLabels) > 0:
-            text_results_idx = self.prompt(results, texts=textLabels)
-            results = results[~text_results_idx]
+            _, text_results_idx, text_sim = self.prompt(results, texts=textLabels)
+            results = results[~text_results_idx[0]]
 
         mask_data = results.masks.data
         # Re-order based upon mask size
@@ -193,7 +198,7 @@ class FastSamClass:
         """
         if bboxes is None and points is None and texts is None:
             return results
-        prompt_results = []
+        prompt_results, idx_list, sim_list = [], [], []
         if not isinstance(results, list):
             results = [results]
         for result in results:
@@ -244,8 +249,10 @@ class FastSamClass:
                     text_idx += (torch.tensor(filter_idx, device=self.device)[:, None] <= text_idx[None, :]).sum(0)
                 idx[text_idx] = True
             prompt_results.append(result[idx])
+            idx_list.append(idx)
+            sim_list.append(similarity)
 
-        return prompt_results
+        return prompt_results, idx_list, sim_list
 
     def visualize(self, image: np.array, masks: np.array):
         if type(masks[0]) == dict:
@@ -269,7 +276,7 @@ if __name__ == "__main__":
 
     config_settings = {"conf": 0.25, "model": "FastSAM-s.pt", "imgsz": 480, "height": img.shape[0],
                        "width": img.shape[1], "mask_height": 416, "mask_width": 480}
-    fastsam = FastSamClass(config_settings)
+    fastsam = FastSamClass(config_settings, 'cuda')
 
     # base test
     everything_results = fastsam.predictor(imgName)

@@ -236,7 +236,7 @@ def run(args):
                         segmentor = fast_sam_module.FastSamClass(
                             {'width': image_width, 'height': image_height,
                              'mask_height': image_height, 'mask_width': image_width, 'conf': 0.5,
-                             'model': 'FastSAM-s.pt', 'imgsz': max(image_height, image_width, 480)},
+                             'model': 'FastSAM-s.pt', 'imgsz': int(max(image_height, image_width, 480))},
                             device=torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"),
                             traversable_categories=traversable_categories
                         )  # imgsz < 480 gives poorer results
@@ -321,10 +321,10 @@ def run(args):
                     # remove the naughty masks
                     goal_mask[np.isin(semantic_instance, bad_goal_classes)] = 99
                 elif args.goal_source.lower() == 'topological':
-                    semantic_instance, _, traversable_mask = segmentor.segment(display_img[:, :, :3])
+                    semantic_instance_seg, _, traversable_mask = segmentor.segment(display_img[:, :, :3], retMaskAsDict=True)
                     goal_mask = goalie.get_goal_mask(
                         qryImg=display_img[:, :, :3],
-                        qryNodes=semantic_instance,
+                        qryNodes=semantic_instance_seg,
                         qryPosition=current_robot_state.position if args.debug else None)
                     control_input_robohop = [goalie.pls, goalie.coords]
                 else:
@@ -334,6 +334,8 @@ def run(args):
                         torch.from_numpy(semantic_instance),
                         traversable_classes
                     ).numpy()
+                else:
+                    semantic_instance = semantic_instance_seg
 
                 if args.infer_depth:
                     depth = depth_model.infer(display_img)  # * 0.44  # is a scaling factor
@@ -365,8 +367,8 @@ def run(args):
                 if args.goal_source.lower() == 'topological':
                     # convert dict to mask
                     new_semantic_instance = np.zeros(display_img.shape[:2])
-                    for n in range(len(semantic_instance)):
-                        new_semantic_instance += semantic_instance[n]["segmentation"] * n
+                    for n in range(len(semantic_instance_seg)):
+                        new_semantic_instance += semantic_instance_seg[n]["segmentation"] * n
                     semantic_instance = new_semantic_instance
                 if args.plot:
                     goal = (goal_mask == goal_mask.min()).astype(int)
