@@ -234,10 +234,18 @@ def run(args):
                         # )
                     elif args.segmentor.lower() == 'fastsam':
                         segmentor = fast_sam_module.FastSamClass(
-                            {'width': image_width, 'height': image_height,
-                             'mask_height': image_height, 'mask_width': image_width, 'conf': 0.5,
-                             'model': 'FastSAM-s.pt', 'imgsz': int(max(image_height, image_width, 480))},
-                            device=torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"),
+                            config_settings={
+                                'width': image_width,
+                                'height': image_height,
+                                'mask_height': image_height,
+                                'mask_width': image_width,
+                                'conf': 0.5,
+                                'model': 'FastSAM-s.pt',
+                                'imgsz': int(max(image_height, image_width, 480))
+                            },
+                            device=torch.device(
+                                "cuda") if torch.cuda.is_available() else torch.device(
+                                "cpu"),
                             traversable_categories=traversable_categories
                         )  # imgsz < 480 gives poorer results
                     elif args.segmentor.lower() == 'sim':
@@ -321,7 +329,8 @@ def run(args):
                     # remove the naughty masks
                     goal_mask[np.isin(semantic_instance, bad_goal_classes)] = 99
                 elif args.goal_source.lower() == 'topological':
-                    semantic_instance_seg, _, traversable_mask = segmentor.segment(display_img[:, :, :3], retMaskAsDict=True)
+                    semantic_instance_seg, _, traversable_mask = segmentor.segment(display_img[:, :, :3],
+                                                                                   retMaskAsDict=True)
                     goal_mask = goalie.get_goal_mask(
                         qryImg=display_img[:, :, :3],
                         qryNodes=semantic_instance_seg,
@@ -360,7 +369,7 @@ def run(args):
                 elif args.method.lower() == 'pixnav':
                     pixnav_goal_mask = robohop_to_pixnav_goal_mask(goal_mask, depth)
                     if not (step % 63) or discrete_action == 0:
-                        policy_agent.reset(display_img, pixnav_goal_mask)
+                        policy_agent.reset(display_img, pixnav_goal_mask.astype(np.uint8))
                     discrete_action, predicted_mask = policy_agent.step(display_img, collided)
                 else:
                     raise NotImplementedError(f'{args.method} is not available...')

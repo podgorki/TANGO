@@ -103,7 +103,7 @@ def plot_sensors(
         ax[0, 3].set_yticks([])
         ax[0, 3].set_title('goal mask')
     ax[1, 3].clear()
-    ax[1, 3].imshow(goal, extent=extent, cmap=goal_cmap)
+    ax[1, 3].imshow(goal, extent=extent) #, cmap=goal_cmap)
     ax[1, 3].set_title('goal mask min goal')
     ax[1, 3].xaxis.set_tick_params(labelbottom=False)
     ax[1, 3].yaxis.set_tick_params(labelleft=False)

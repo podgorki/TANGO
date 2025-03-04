@@ -18,12 +18,13 @@ from libs.commons import utils, utils_data, utils_viz
 
 class Goal_Gen:
 
-    def __init__(self, W: int, H: int, G, map_path, task_type, poses: Optional = None, ):
+    def __init__(self, W: int, H: int, G, map_path, task_type, poses: Optional = None, cfg: dict = {}):
         self.W = W
         self.H = H
         self.max_pl = 100
+        self.cfg = cfg
         self.qIter = -1
-        self.goalMask_default = self.max_pl * np.ones((self.H, self.W))  # default value for invalid goal segments
+        self.goalMask_default = self.max_pl * np.ones((self.H, self.W), int)  # default value for invalid goal segments
         self.G = G
         self.map_path = map_path
         self.positions = None
@@ -33,18 +34,26 @@ class Goal_Gen:
         utils.change_edge_attr(self.G)
         self.nodeID_to_imgRegionIdx = np.array([self.G.nodes[node]['map'] for node in self.G.nodes()])
 
-        self.goalNodeIdx = utils_data.get_goalNodeIdx(self.map_path, self.G, self.nodeID_to_imgRegionIdx, task_type)
+        # self.goalNodeIdx = utils_data.get_goalNodeIdx(self.map_path, self.G, self.nodeID_to_imgRegionIdx, task_type)
+        self.goalNodeIdx = self.cfg.get("goalNodeIdx", None)
+        if self.goalNodeIdx == -1:
+            self.goalNodeIdx = self.G.number_of_nodes() - 1
+        elif self.goalNodeIdx is None:
+            self.goalNodeIdx = utils_data.get_goalNodeIdx(self.map_path, self.G, self.nodeID_to_imgRegionIdx, task_type)
+
+        self.goalImgIdx = self.nodeID_to_imgRegionIdx[self.goalNodeIdx][0]  # TODO: find max if list of goal nodes
+        self.cfg.update({"goalImgIdx": self.goalImgIdx})
+
         self.localizer = loc_topo.Localize_Topological(
-            f"{self.map_path}/images", self.G, self.W, self.H, mapImgPositions=self.positions
+            f"{self.map_path}/images", self.G, self.W, self.H, mapImgPositions=self.positions,  # cfg
         )
         self.planner_g = plan_topo.PlanTopological(self.G, self.goalNodeIdx)
 
-    def get_goal_mask(self, qryImg, qryNodes, qryPosition: Optional = None):
+    def get_goal_mask(self, qryImg, qryNodes, qryPosition: Optional = None, remove_mask: Optional = None):
         self.qIter += 1
         logger.info(f"Iter: {self.qIter}")
         printTime = False
         t1 = time.time()
-        # self.qryNodes = self.segmentor.segment(qryImg)
         self.qryNodes = qryNodes
 
         if printTime: print(f"Segmentation time: {time.time() - t1:.2f}s")
@@ -53,6 +62,8 @@ class Goal_Gen:
             self.localizer.lost = True
         else:
             self.qryMasks = utils.nodes2key(self.qryNodes, 'segmentation')
+            if remove_mask is not None:
+                self.qryMasks *= remove_mask[None, ...]
             self.qryCoords = utils.nodes2key(self.qryNodes, 'coords')
             if printTime: print(f"Seg Proc time: {time.time() - t1:.2f}s")
 
@@ -62,19 +73,30 @@ class Goal_Gen:
             # let controller enter explore mode (return default goal mask)?
             # resume localization from the new observation
             self.localizer.lost = False
-            self.pls = self.max_pl * np.ones(len(self.qryCoords))
+            self.pls = self.max_pl * np.ones(len(self.qryCoords), dtype=int)
+            self.pls_min = self.pls
             self.coords = self.qryCoords
+            self.matchPairs = np.column_stack([np.arange(len(self.qryCoords)), self.pls])
             return self.goalMask_default
         if printTime: print(f"Localization time: {time.time() - t1:.2f}s")
 
         self.pls, nodesClose2Goal = self.planner_g.get_pathLengths_matchedNodes(self.matchPairs[:, 1])
+
+        # minimize over repeated qry nodes (efficient impl, might be hard to grasp)
+        matchesMask = self.matchPairs[:, 0][:, None] == np.arange(len(self.qryCoords))[None,
+                                                        :]  # N_qry_repeat x N_qry_original
+        pls_min_inds = (matchesMask * (self.pls.max() - self.pls[:, None])).argmax(0)  # N_qry_original
+        self.pls_min = self.pls[pls_min_inds]
+        pls_min_ref_node_inds = self.matchPairs[pls_min_inds, 1]
         self.coords = self.qryCoords[self.matchPairs[:, 0]]
 
         if printTime: print(f"Planning time: {time.time() - t1:.2f}s")
 
         self.goalMask = self.goalMask_default.copy()
-        for i in range(len(self.pls)):
-            self.goalMask[self.qryMasks[self.matchPairs[i, 0]]] = self.pls[i]
+        # for i in range(len(self.pls)):
+        #     self.goalMask[self.qryMasks[self.matchPairs[i, 0]]] = self.pls[i]
+        for i in range(len(self.pls_min)):
+            self.goalMask[self.qryMasks[i]] = self.pls_min[i]
         if printTime: print(f"Goal mask time: {time.time() - t1:.2f}s")
 
         return self.goalMask
