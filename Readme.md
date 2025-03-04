@@ -22,7 +22,7 @@ git clone https://github.com/AnyLoc/AnyLoc.git
 submodule habitat-lab
 
 ```
-git submodule add https://github.com/facebookresearch/habitat-lab.git libs/habitat-lab`
+git submodule add https://github.com/facebookresearch/habitat-lab.git libs/habitat-lab
 cd libs/habitat-lab/
 git checkout v0.2.4
 pip install -e habitat-lab
@@ -66,4 +66,6 @@ git submodule add https://github.com/facebookresearch/segment-anything.git libs/
 
 then install with
 
-```cd libs/segmentor/segment_anything; pip install -e .```
+```
+cd libs/segmentor/segment_anything; pip install -e .
+```
