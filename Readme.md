@@ -3,6 +3,7 @@
 ```
 conda create -n tango-habitat python=3.9 cmake=3.14.0
 conda activate tango-habitat
+conda install open-clip-torch
 
 # (# Download SegmentMap repository from https://universityofadelaide.box.com/s/rbge9q7mv0alucvqjelx8odisw59mehm and place it in .`/auto_agents/`)
 
@@ -27,7 +28,6 @@ cd libs/habitat-lab/
 git checkout v0.2.4
 pip install -e habitat-lab
 ```
-
 
 
 # Pixnav
