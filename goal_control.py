@@ -18,7 +18,7 @@ from libs.control.robohop import control_with_mask
 from libs.depth.depth_anything_metric_model import DepthAnythingMetricModel
 from libs.goal_generator import goal_gen
 import libs.path_finding.plot_utils as plot_utils
-from libs.segmentor import sam, fast_sam_module
+from libs.segmentor import fast_sam_module
 from libs.utils import split_observations, build_intrinsics, apply_velocity, setup_sim_plots, \
     robohop_to_pixnav_goal_mask, has_collided, initialize_results, write_results, write_final_meta_results, \
     get_traversibility
@@ -127,6 +127,7 @@ def run(args):
     if args.infer_depth:
         depth_model_name = 'zoedepth'
         path_zoe_depth = Path.cwd() / 'model_weights' / 'depth_anything_metric_depth_indoor.pt'
+        print(f'{path_zoe_depth=}')
         if not path_zoe_depth.exists():
             raise FileNotFoundError(f'{path_zoe_depth} not found...')
         depth_model = DepthAnythingMetricModel(depth_model_name, pretrained_resource=str(path_zoe_depth))

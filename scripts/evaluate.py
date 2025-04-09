@@ -191,5 +191,5 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-
+    args.path_results = '/home/hamish/Documents/robohop/results/tango/reconfirm/val/hard/20250305-13-19-13_pixnav_topological'
     run(args)
