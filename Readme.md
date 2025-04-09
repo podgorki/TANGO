@@ -3,18 +3,7 @@
 ```
 conda create -n tango-habitat python=3.9 cmake=3.14.0
 conda activate tango-habitat
-
-# (# Download SegmentMap repository from https://universityofadelaide.box.com/s/rbge9q7mv0alucvqjelx8odisw59mehm and place it in .`/auto_agents/`)
-
-# install RoboHop dependencies (assumed SegmentMap folder is already copied over or downloaded from github)
-cd auto_agents/SegmentMap/sam
-pip install -e . 
-
-# Download SAM (ViT-H) checkpoint from https://github.com/facebookresearch/segment-anything?tab=readme-ov-file#model-checkpoints and place it in `./models/segment-anything/` (or use symlinks)
-
-# clone AnyLoc for DINOv2 features
-cd auto_agents/SegmentMap
-git clone https://github.com/AnyLoc/AnyLoc.git
+conda install open-clip-torch
 ```
 
 # Habitat-lab
@@ -27,7 +16,6 @@ cd libs/habitat-lab/
 git checkout v0.2.4
 pip install -e habitat-lab
 ```
-
 
 
 # Pixnav
