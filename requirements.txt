@@ -1,7 +1,0 @@
-kornia
-sklearn
-scipy
-networkx
-timm
-einops
-spatialmath-python
