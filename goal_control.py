@@ -126,7 +126,7 @@ if __name__ == "__main__":
     if not os.path.exists(config_file):
         logger.warning(
             f"Using default config file, create {config_file} to customise the parameters")
-        config_file = "defaults.yaml"
+        config_file = "configs/defaults.yaml"
 
     if os.path.exists(config_file):
         with open(config_file, 'r') as f:
