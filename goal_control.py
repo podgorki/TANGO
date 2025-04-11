@@ -7,7 +7,6 @@ from argparse import ArgumentParser
 import logging
 import yaml
 import traceback
-import csv
 
 from libs.logger import default_logger
 
@@ -27,17 +26,6 @@ def run(args):
     path_scenes_root_hm3d = path_dataset / 'hm3d_v0.2' / args.split
     path_episode_root = path_dataset / f'hm3d_iin_{args.split}'
     print(f'Root path for episodes: {path_episode_root}')
-
-    # Results tracking
-    results_summary = {
-        'total_episodes': 0,
-        'successful_episodes': 0,
-        'failed_episodes': 0,
-        'success_rate': 0.0,
-        'failure_reasons': {}
-    }
-    # if args.log_wandb:
-    #     task_setup.setup_wandb_logging(args)
 
     path_results_folder = task_setup.init_results_dir_and_save_cfg(
         args, default_logger
@@ -59,7 +47,6 @@ def run(args):
 
     for ei, path_episode in tqdm(enumerate(episodes), total=len(episodes),
                                  desc=f'Processing Episodes (Total: {len(episodes)})'):
-        results_summary['total_episodes'] += 1
         episode_name = path_episode.parts[-1].split('_')[0]
         path_scene_hm3d = sorted(path_scenes_root_hm3d.glob(f'*{episode_name}'))[0]
         scene_name_hm3d = str(sorted(path_scene_hm3d.glob('*basis.glb'))[0])
@@ -121,7 +108,6 @@ def run(args):
                 traceback.print_exc()
                 exit(-1)
 
-    return results_summary
 
 
 def parse_args():

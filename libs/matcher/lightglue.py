@@ -151,35 +151,3 @@ class MatchLightGlue():
             else:
                 matchPairs.append(np.zeros((0, 2), int))
         return matchPairs, vizImgs, ftSrc
-
-
-# Example usage, run from main repo:
-# python -m libs.matcher.lightglue /path/to/image1 /path/to/image2 /path/to/sam_model
-if __name__ == "__main__":
-    # imgPath1 = f"{os.path.expanduser('~')}/fastdata/navigation/hm3d_iin_train/1S7LAXRdDqK_0000000_plant_42_/images/00010.png"
-    # imgPath2 = f"{os.path.expanduser('~')}/fastdata/navigation/hm3d_iin_train/1S7LAXRdDqK_0000000_plant_42_/images/00013.png"
-    # modelPath = f"{os.path.expanduser('~')}/workspace/s/sg_habitat/models/segment-anything/"
-
-    imgPath1 = sys.argv[1]
-    imgPath2 = sys.argv[2]
-    modelPath = sys.argv[3]
-
-    img1 = cv2.resize(cv2.imread(imgPath1)[:, :, ::-1], (320, 240))
-    img2 = cv2.resize(cv2.imread(imgPath2)[:, :, ::-1], (320, 240))
-
-    matcher = MatchLightGlue()
-
-    from libs.segmentor import sam
-    seg = sam.Seg_SAM(modelPath)
-
-    masks1 = seg.segment(img1)
-    print(f"Found {len(masks1)} masks for image 1")
-    masks2 = seg.segment(img2)
-    print(f"Found {len(masks2)} masks for image 2")
-
-    matchesBool, matches_ij, singleBestMatch, _, vizImgs = matcher.matchPair_imgWithMask(
-        imgPath1, imgPath2, masks1, masks2, visualize=True)
-    print(f"Found {matchesBool.sum()} matches")
-
-    plt.imshow(vizImgs[1])
-    plt.show()

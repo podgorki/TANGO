@@ -179,15 +179,9 @@ if __name__ == "__main__":
         modelPath = None
 
     W, H = 320, 240
-    if segmentor_type == 'sam':
-        from libs.segmentor import sam
-        segmentor = sam.Seg_SAM(modelPath, "cuda", resize_w=W, resize_h=H)
-    elif segmentor_type == 'fast_sam':
+    if segmentor_type == 'fast_sam':
         from libs.segmentor import fast_sam_module
         segmentor = fast_sam_module.FastSamClass({'width':W, 'height':H, 'mask_height':H, 'mask_width':W, 'conf':0.25, 'model':'FastSAM-s.pt', 'imgsz':max(H,W,480)}) # imgsz < 480 gives poorer results
-    elif segmentor_type == 'sam2':
-        from libs.segmentor import sam2_seg
-        segmentor = sam2_seg.Seg_SAM2(model_checkpoint=modelPath, resize_w=W, resize_h=H)
     else:
         raise ValueError(f"Segmentor {segmentor_type} not recognized")
 
