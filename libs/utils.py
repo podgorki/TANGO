@@ -1,4 +1,3 @@
-from pathlib import Path
 import habitat_sim
 from PIL import Image
 import numpy as np
@@ -7,13 +6,12 @@ from typing import Optional
 from habitat_sim.utils import common as utils
 import logging
 import matplotlib.pyplot as plt
-import quaternion as qt
 
 logger = logging.getLogger(__name__)
 
 
 def setup_sim_plots():
-    fig, ax = plt.subplots(2, 4)
+    fig, ax = plt.subplots(2, 4, figsize=(12, 7))
     plt.ion()
     return fig, ax
 
@@ -38,7 +36,7 @@ def build_intrinsics(image_width: int,
     return intrinsics
 
 
-def split_observations(observations, sem_insta_2_cat_map):
+def split_observations(observations):
     rgb_obs = observations["color_sensor"]
     depth = observations["depth_sensor"]
     rgb_img = Image.fromarray(rgb_obs, mode="RGBA")
@@ -157,81 +155,3 @@ def apply_velocity(vel_control, agent, sim, velocity, steer, time_step):
 
 def get_traversibility(semantic: torch.Tensor, traversable_classes: list) -> torch.Tensor:
     return torch.isin(semantic, torch.tensor(traversable_classes)).to(int)
-
-
-def log_control(xi: float, yi: float, thetai: float,
-                xj: float, yj: float, thetaj: float,
-                distance_error: float, theta_error: float,
-                theta_control: float, thetaj_current: float) -> None:
-    s = (f'distance error: {distance_error:.11f}, '
-         f'tangent error: {(theta_error * 180 / np.pi):.11f}, '
-         f'xi: {xi:.11f}, yi: {yi:.11f}, thetai: {(thetai * 180 / np.pi):.11f}, '
-         f'xj: {xj:.11f}, yj: {yj:.11f}, thetaj: {(thetaj * 180 / np.pi):.11f}, '
-         f'theta control: {(theta_control * 180 / np.pi):.11f}, '
-         f'theta cumulative: {(thetaj_current * 180 / np.pi):.11f}')
-    logger.info("%s", s)
-
-
-def initialize_results(
-        filename_metadata_episode,
-        filename_results_episode,
-        args,
-        pid_steer_values,
-        hfov_radians,
-        time_delta,
-        velocity_control,
-        goal_position,
-        traversable_categories
-):
-    # write metadata
-    with open(str(filename_metadata_episode), 'w') as f:
-        f.writelines(f'method={args.method}\n'
-                     f'inferring_depth={args.infer_depth}\n'
-                     f'goal_source={args.goal_source}\n'
-                     f'max steps={args.max_steps}\n'
-                     f'goal distance threshold={args.threshold_goal_distance}\n'
-                     f'steer pid values={pid_steer_values}\n'
-                     f'camera fov={(hfov_radians * 180 / np.pi):.2f}\n'
-                     f'time_delta={time_delta}\n'
-                     f'velocity_control={velocity_control}\n'
-                     f'goal position={list(goal_position)}\n'
-                     f'traversable categories={traversable_categories}\n')
-
-    with open(str(filename_results_episode), 'a') as f:
-        f.writelines(f'step,x,y,z,yaw,distance_to_goal,velocity_control,theta_control,discrete_action,collided\n')
-    return
-
-
-def write_results(filename_results_episode,
-                  step,
-                  current_robot_state,
-                  distance_to_goal,
-                  velocity_control,
-                  theta_control,
-                  collided,
-                  discrete_action
-                  ) -> None:
-    with open(str(filename_results_episode), 'a') as f:
-        f.writelines(f'{step},'
-                     f'{current_robot_state.position[0]},'
-                     f'{current_robot_state.position[1]},'
-                     f'{current_robot_state.position[2]},'
-                     f'{np.arccos(qt.as_rotation_matrix(current_robot_state.rotation)[0, 0]) * 180 / np.pi},'
-                     f'{distance_to_goal},'
-                     f'{velocity_control},'
-                     f'{theta_control * 180 / np.pi},'
-                     f'{discrete_action},'
-                     f'{int(collided)}\n')
-
-
-def write_final_meta_results(
-        filename_metadata_episode: Path,
-        success_status: str,
-        final_distance: float,
-        step: int,
-        distance_to_final_goal):
-    with open(str(filename_metadata_episode), 'a') as f:
-        f.writelines(f'success_status={success_status}\n'
-                     f'final_distance={final_distance}\n'
-                     f'step={step}\n'
-                     f'distance_to_final_goal_from_start={distance_to_final_goal}')

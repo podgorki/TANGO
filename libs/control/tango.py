@@ -41,11 +41,11 @@ class TangoControl:
 
         # bev occupancy grid (x, y, z): (+-5m, +-5m, 0-10m)
         self.grid_size = grid_size
-        self.grid_min = torch.tensor([-5, -10, 0], device=self.device)
+        self.grid_min = torch.tensor([-5, 0, 0], device=self.device)
         self.grid_max = torch.tensor([5, 10, 10], device=self.device)
         self.cells = ((self.grid_max - self.grid_min) / self.grid_size).to(int)
         self.w_bev, self.h_bev = self.cells[2].item(), self.cells[0].item()
-        self.grid_shift = torch.tensor([self.h_bev // 2, -2], dtype=torch.long,
+        self.grid_shift = torch.tensor([self.h_bev // 2, -3], dtype=torch.long,
                                        device=self.device)  # todo: make the z roll be auto calculated
         self.start_bev = (self.w_bev // 2, 0)
         self.x_bev_range = torch.arange(
@@ -101,12 +101,12 @@ class TangoControl:
         self.free_bev.zero_()
         self.occupied_bev = (
                 self.occupied_bev.to(torch.long).index_put_((xy_t_ij[:, 1], xy_t_ij[:, 0]),
-                                                        torch.logical_not(traversable).long(),
-                                                        accumulate=True) > 0
+                                                            torch.logical_not(traversable).long(),
+                                                            accumulate=True) > 0
         ).int()
         self.free_bev = (
                 self.free_bev.to(torch.long).index_put_((xy_t_ij[:, 1], xy_t_ij[:, 0]), traversable.long(),
-                                                    accumulate=True) > 0
+                                                        accumulate=True) > 0
         ).int()
         occupancy = (self.free_bev - self.occupied_bev).clip(0, 1)
         return occupancy.float()
@@ -125,7 +125,7 @@ class TangoControl:
         return thetas[..., None]
 
     def get_point_poses_numpy(self, path_traversable_bev: np.ndarray) -> np.ndarray:
-        skips = 2
+        skips = 5
         traversable_bev_xs = self.x_bev_range[path_traversable_bev[:, 0]]
         traversable_bev_zs = self.z_bev_range[path_traversable_bev[:, 1]]
         if path_traversable_bev.shape[0] > skips:
@@ -161,6 +161,8 @@ class TangoControl:
 
     def control(self, depth: np.ndarray, robohop_control: np.ndarray, goal_mask: np.ndarray,
                 traversable_mask: np.ndarray) -> float:
+        velocity_control = 0.01  # gets over-written if we have TANGO
+        goal_image = None
         depth = torch.from_numpy(depth).to(self.device)
         goal_mask = torch.from_numpy(goal_mask).to(self.device)
         point_goal_bev = self.compute_goal_point(depth, goal_mask)
@@ -175,9 +177,12 @@ class TangoControl:
 
         # setup defaults in case path is bad
         self.bev_relative = np.zeros((20, 20), np.uint8)
-        self.planning_cost_map_relative_bev_safe = np.zeros((20, 20), np.uint8)
+        self.planning_cost_map_relative_bev_safe = np.zeros_like(self.bev_relative)
         self.xi, self.xj, self.yi, self.yj = 0, 0, 0, 0
-        self.point_poses = np.array([[self.xi, self.yi], [self.xj, self.yj]])
+        self.point_poses = np.array([
+            [self.xi, self.yi],
+            [self.xj, self.yj]
+        ])
         # for extracting when plotting
         self.bev_relative = traversable_relative_bev_safe.squeeze(0, 1).cpu().numpy()
         if self.check_if_traversable(traversable_relative_bev_safe):
@@ -215,24 +220,23 @@ class TangoControl:
                 self.xi, self.xj = self.point_poses[0, 0], self.point_poses[1, 0]
                 self.yi, self.yj = self.point_poses[0, 1], self.point_poses[1, 1]
                 velocity_control = self.default_velocity_control
-            else:
-                _, theta_control, goal_image = control_with_mask(
-                    robohop_control,
-                    goal_mask.cpu().numpy(),
-                    v=self.default_velocity_control,
-                    gain=1,
-                    # tao=5,
-                )
-                theta_control = -theta_control
-                velocity_control = 0.01  # todo: decide if this should be faster or something else that is more clever
-        else:
-            _, theta_control, goal_image = control_with_mask(
-                robohop_control,
-                goal_mask.cpu().numpy(),
-                v=self.default_velocity_control,
-                gain=1,
-                # tao=5,
-            )
-            theta_control = -theta_control
-            velocity_control = 0.01  # todo: decide if this should be faster or something else that is more clever
-        return velocity_control, theta_control  # this is the amount to rotate from the intermediate theta(j) to the next theta(j+1)
+                return velocity_control, theta_control, goal_image  # this is the amount to rotate from the intermediate theta(j) to the next theta(j+1)
+            # else:
+            #     _, theta_control, goal_image = control_with_mask(
+            #         robohop_control,
+            #         goal_mask.cpu().numpy(),
+            #         v=self.default_velocity_control,
+            #         gain=1,
+            #         # tao=5,
+            #     )
+            #     theta_control = -theta_control
+        # else:
+        _, theta_control, goal_image = control_with_mask(
+            robohop_control,
+            goal_mask.cpu().numpy(),
+            v=self.default_velocity_control,
+            gain=1,
+            # tao=5,
+        )
+        theta_control = -theta_control
+        return velocity_control, theta_control, goal_image  # this is the amount to rotate from the intermediate theta(j) to the next theta(j+1)

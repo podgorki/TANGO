@@ -2,11 +2,58 @@ import numpy as np
 import networkx as nx
 from typing import List, Dict, Any
 
+
+def count_edges_with_given_weight(G, edge_weight_str):
+    if edge_weight_str is None:
+        return len(G.edges())
+    return sum([1 for e in G.edges(data=True) if e[2].get(edge_weight_str) is not None])
+
+
+def get_edge_weight_types(G):
+    edge_weight_types = set()
+    for e in G.edges(data=True):
+        for k in e[2].keys():
+            edge_weight_types.add(k)
+    return edge_weight_types
+
+
 def change_edge_attr(G):
     for e in G.edges(data=True):
         if 'margin' in e[2]:
             e[2]['margin'] = 0.0
     return G
+
+
+def norm_minmax(costs, max_val=1):
+    costs = costs - costs.min()
+    if costs.max() != 0:
+        costs = costs / costs.max()
+    return (costs * max_val)
+
+
+def normalize_pls(pls, scale_factor=100, outlier_value=99):
+    # remove outlier values if exist
+    if pls.max() >= outlier_value:
+        # if all are outliers, set them to zero
+        if pls.min() >= outlier_value:
+            pls = np.zeros_like(pls)
+            return pls
+        # else set outliers to max value of inliers + 1
+        # so that when normalized, they are set to 0
+        else:
+            pls[pls >= outlier_value] = pls[pls < outlier_value].max() + 1
+            # include a dummy value to ensure that the size is the same as the below case
+            pls = np.concatenate([pls, [pls.max()]])
+    # no outliers
+    else:
+        # include a dummy value to ensure that the max value is same as that with outliers
+        pls = np.concatenate([pls, [pls.max() + 1]])
+
+    # normalize so that outliers are set to 0
+    # inliers are ranged (0, scale_factor]
+    pls = scale_factor * (pls.max() - pls) / (pls.max() - pls.min())
+    return pls[:-1]
+
 
 def modify_graph(G,nodes,edges):
     G2 = nx.Graph()
@@ -111,7 +158,3 @@ def nodes2key(nodeInds, key, G=None):
     if key == 'coords':
         values = np.array([np.array(np.nonzero(v)).mean(1)[::-1].astype(int) for v in values])
     return values
-
-def get_instance_index_to_name_mapping(semanticScene):
-    instance_index_to_name = np.array([[i, obj.category.name()] for i, obj in enumerate(semanticScene.objects)])
-    return instance_index_to_name

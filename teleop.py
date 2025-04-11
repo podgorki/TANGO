@@ -9,6 +9,7 @@ from importlib import reload
 import os
 import sys
 from natsort import natsorted
+import pickle
 
 import habitat_sim
 import utils
@@ -25,7 +26,7 @@ display = False
 if teleop: display = True
 stepthrough = False # if teleop, stepthrough is ignored
 mapping = False # set to True to create an automatic mapping run trajectory
-autoAgentName = 'GNM' # 'GNM' or 'RoboHop'
+autoAgentName = 'RoboHop_GT' # 'GNM' or 'RoboHop'
 mapPath = "./out/maps/multiPointTrajs/"
 # get args
 args = nav_parser.parse_args("-ds hm3d -v 0.05 -c 'ceiling' -d".split(" "))
@@ -42,14 +43,20 @@ if args.dataset == 'skokloster':
     test_scene_name = test_scene.split("/")[-1].split(".")[0]
 elif args.dataset == 'hm3d':
     updateNavMesh = False
-    glbDir = "./data/hm3d_v0.2/val/"
-    test_scene_name = "5cdEh9F2hJL"
+
+    # glbDir = "./data/hm3d_v0.2/val/"
+    # test_scene_name = "5cdEh9F2hJL"
+    # mapName = "TEEsavR23oF_sofa_132_20240408202325700113" # has depth
+    # mapName = "4ok3usBNeis_chair_8_20240415155542210375"
+    # mapName = "5cdEh9F2hJL_toilet_36_20240430160015093231"
+
+    glbDir = "./data/hm3d_v0.2/train/"
+    test_scene_name = "1S7LAXRdDqK"
+    mapName = "1S7LAXRdDqK_0000000_plant_42_"
+
     glbDirs = natsorted(os.listdir(glbDir))
     glbDir_test_scene = [d for d in glbDirs if test_scene_name in d][0]
     test_scene = f"{glbDir}/{glbDir_test_scene}/{test_scene_name}.basis.glb"
-    # mapName = "TEEsavR23oF_sofa_132_20240408202325700113" # has depth
-    # mapName = "4ok3usBNeis_chair_8_20240415155542210375"
-    mapName = "5cdEh9F2hJL_toilet_36_20240430160015093231"
 
 if args.path_rerun is None:
     outDir, outImgDir, outStateDir, controlLogsDir = utils.createTimestampedFolderPath(f"./out/runs/dump/",mapName,subfolder=["images","states","controlLogs"])
@@ -66,6 +73,24 @@ if not teleop:
         import auto_agent as AA
         RH = AA.Agent_RoboHop(imgDir=f"{mapPath}/{mapName}/images/", modelsPath=f"./models/segment-anything/",h5FullPath=f"./out/tmp/{mapName}_nodes.h5",forceRecomputeGraph=False,args=args,**{"intraNbrsAll":False, "comp_G23":False, "controlLogsDir":controlLogsDir})
         autoAgent = RH
+    elif autoAgentName == 'RoboHop_GT':
+        from libs.control import robohop as C_RH
+        goalMaskType = "topological" # from ["gt_metric", "gt_topological", "topological"]
+
+        # TODO: path/episode setup integrate with the other two above
+        mapPath = f"{os.path.expanduser('~')}/fastdata/navigation/hm3d_iin_train/{mapName}/"
+        if goalMaskType == "gt_topological":
+            from dataloader.datasets_habitat import getGoalMask
+            mapGraph = pickle.load(open(f"{mapPath}/nodes_graphObject_4.pickle",'rb'))
+            goal_object_id = int(os.path.basename(os.path.dirname(mapPath)).split("_")[-2])
+            # episode = np.load(f"{mapPath}/episode.npy", allow_pickle=True)[()]
+            # assert(goal_object_id == int(episode.goal_object_id))
+        elif goalMaskType == "topological":
+            from libs.goal_generator import goal_gen
+
+            goalie = goal_gen.Goal_Gen(modelPath=f"{os.path.expanduser('~')}/workspace/s/sg_habitat/models/segment-anything/", W=256, H=256)
+            goalie.load_episode(mapPath)
+        
 
  # %%
 
@@ -83,6 +108,11 @@ elif autoAgentName == 'GNM':
     agent_params = {"max_v": 0.05 , "max_w": 0.1} # m/s, # rad/s
     agent_states = np.load(f"{mapPath}/{mapName}/agent_states.npy", allow_pickle=True)#[:-6]
     agent.set_state(agent_states[0])
+elif autoAgentName == 'RoboHop_GT':
+    agent_states = np.load(f"{mapPath}/agent_states.npy", allow_pickle=True)
+    agent.set_state(agent_states[0])
+    if goalMaskType == "gt_metric":
+        goal_position = agent_states[-1].position
 else:
     agent_params = {"max_v": 0.2 , "max_w": 0.6} # m/s, # rad/s
     # setup agent for specific exp
@@ -163,6 +193,24 @@ try:
                         RH.save_episode(**{"t_err":t_err, "r_err":r_err, "final_state":curr_state})
                         complete = True
                         break
+                    autoaction = [v,w]
+                elif autoAgentName == 'RoboHop_GT':
+                    semantic = observations["semantic_sensor"]
+                    if goalMaskType == "gt_metric":
+                        goalMask = ust.get_pathlength_GT(sim,agent,depth,semantic,goal_position,randColors)[2]
+                        controlInput = semantic
+                    elif goalMaskType == "gt_topological":
+                        goalMask = getGoalMask(mapGraph,semantic,goal_object_id)
+                        controlInput = semantic
+                    elif goalMaskType == "topological":
+                        goalMask = goalie.get_goal_mask(np.array(rgb_img)[:,:,:3])
+                        coords = goalie.qryCoords[goalie.matchPairs[:,0]]
+                        controlInput = [goalie.pls, coords]
+                    v, w, vizImg = C_RH.control_with_mask(controlInput, goalMask, v=0.05, gain=1)
+                    vizImg = np.column_stack([np.array(rgb_img)[:,:,:3][:,:,::-1], vizImg[:,:,::-1] * 255])
+                    cv2.imwrite(f"{controlLogsDir}/combinedImg_{step:05d}.png", vizImg)
+                    # plt.imshow(vizImg)
+                    # plt.show()
                     autoaction = [v,w]
                 print(autoaction, v, w)
 

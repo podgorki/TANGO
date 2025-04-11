@@ -4,18 +4,138 @@ import magnum as mn
 import matplotlib.pyplot as plt
 from PIL import Image
 import json
+import networkx as nx
 from scipy.spatial.transform import Rotation
 from spatialmath import SE3, SO3, SE2
 from spatialmath.base import trnorm, r2q
 
 import habitat_sim
-# from habitat.utils.visualizations import maps
+from habitat.utils.visualizations import maps
 from habitat_sim.utils.common import quat_from_magnum, quat_to_magnum
-from utils import display_sample, getK_fromAgent
+from utils import display_sample, getK_fromAgent, sample_goal_instances_across_regions
 
 
-def maps():
-    pass
+# def maps():
+#     pass
+
+def on_same_floor(path, floor_height_desired):
+    floor_heights = np.array(path)[:, 1]
+    floor_heights_diff = np.abs(floor_heights - floor_height_desired)
+    return np.all(floor_heights_diff < 0.5)
+
+def get_incremental_shortest_path(sim, points, init_idx=0, floor_height_desired=None):
+    # compute all geodesic distances across given points
+    dists_cross = np.array([[find_shortest_path(sim, pi, pj)[0] for pi in points] for pj in points])
+
+    visited_inds = [init_idx]
+    paths = []
+    # greedy algorithm to find the shortest path incrementally
+    while len(visited_inds) < len(points):
+        # pick the next point with the shortest path, not already in the visited_inds
+        next_idx = [idx for idx in dists_cross[init_idx].argsort() if idx not in visited_inds][0]
+        p1 = points[init_idx]
+        p2 = points[next_idx]
+        _, path = find_shortest_path(sim, p1, p2)
+
+        if floor_height_desired is not None and not on_same_floor(path, floor_height_desired):
+            print(f"Skipping path between {init_idx=} and {next_idx=}: not on the same floor")
+            visited_inds.append(next_idx)
+            continue
+
+        paths.extend(path)
+        visited_inds.append(next_idx)
+        init_idx = next_idx
+    return paths
+
+def get_tsp_path(sim, points, init_idx=0, floor_height_desired=None):
+
+    G = nx.Graph()
+    paths = {}
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            dist, path = find_shortest_path(sim, points[i], points[j])
+            if floor_height_desired is not None:
+                if not on_same_floor(path, floor_height_desired):
+                    dist = np.inf
+                    continue
+            G.add_edge(i, j, weight=dist)
+            paths[(i, j)] = paths[(j, i)] = path
+    node_inds = nx.algorithms.approximation.traveling_salesman_problem(G, cycle=False)
+    init_idx_idx = node_inds.index(init_idx)
+    node_inds = node_inds[init_idx_idx:] + node_inds[:init_idx_idx]
+    paths = np.concatenate([paths[(node_inds[i], node_inds[i + 1])] for i in range(len(node_inds) - 1)])
+    return paths
+
+
+def get_path_from_goals_across_regions(sim, init_point=None, floor_height_desired=None):
+    _, points = sample_goal_instances_across_regions(
+        sim.semantic_scene, seed=None)
+
+    if init_point is not None:
+        points = np.vstack([init_point, points])
+
+    init_idx = 0
+    paths = get_incremental_shortest_path(sim, points, init_idx, floor_height_desired)
+    # paths = get_tsp_path(sim, points, init_idx, floor_height_desired)
+
+    points_floors = sample_random_points(sim)
+    height = guess_height(points_floors, points[init_idx])
+    return paths, height
+
+
+def guess_height(points_floors, point):
+    heights = list(points_floors.keys())
+    heights.sort()
+    diff = np.array([abs(height - point[1]) for height in heights])
+    return heights[diff.argmin()]
+
+
+def sample_random_points(sim, volume_sample_fac=1.0, significance_threshold=0.2):
+    # Based on https://github.com/facebookresearch/habitat-sim/issues/2253#issuecomment-1841875064
+
+    scene_bb = sim.get_active_scene_graph().get_root_node().cumulative_bb
+    scene_volume = scene_bb.size().product()
+    points = np.array([sim.pathfinder.get_random_navigable_point()
+                      for _ in range(int(scene_volume * volume_sample_fac))])
+
+    hist, bin_edges = np.histogram(points[:, 1], bins='auto')
+    significant_bins = (hist / len(points)) > significance_threshold
+    l_bin_edges = bin_edges[:-1][significant_bins]
+    r_bin_edges = bin_edges[1:][significant_bins]
+    points_floors = {}
+    for l_edge, r_edge in zip(l_bin_edges, r_bin_edges):
+        points_floor = points[(points[:, 1] >= l_edge) &
+                              (points[:, 1] <= r_edge)]
+        height = points_floor[:, 1].mean()
+        points_floors[height] = points_floor
+    return points_floors
+
+
+def get_path_via_alt_goal(sim, path_episode):
+    states = np.load(f"{path_episode}/agent_states.npy", allow_pickle=True)
+    path = np.array([s.position for s in states])
+    avg_floor_height = np.mean([s.position[1] for s in states])
+    alt_goal = np.load(f"{path_episode}/seen_but_unvisited_object.npy", allow_pickle=True)[()]
+    alt_goal_insta_id = alt_goal['instance_id']
+    path_new = None
+    for instance in sim.semantic_scene.objects:
+        if int(instance.id.split("_")[-1]) == alt_goal_insta_id:
+            alt_goal_pos = instance.aabb.center
+            alt_goal_pos[1] = avg_floor_height
+            alt_goal_pos = sim.pathfinder.snap_point(alt_goal_pos)
+            if np.isnan(alt_goal_pos).any():
+                print(f"Skipping: Alt goal position is nan: {alt_goal_pos}")
+                print(f"Alt goal instance info: {instance.id=}, {instance.aabb.center=}, {avg_floor_height=}")
+                break
+            path_start_to_alt_goal = find_shortest_path(sim, path[0], alt_goal_pos)[1]
+            path_alt_goal_to_end = find_shortest_path(sim, alt_goal_pos, path[-1])[1]
+            if len(path_start_to_alt_goal) == 0 or len(path_alt_goal_to_end) == 0:
+                print(f"Skipping: {len(path_start_to_alt_goal)=} and {len(path_alt_goal_to_end)=}")
+                print(f"Alt goal instance info: {instance.id=}, {instance.aabb.center=}, {avg_floor_height=}")
+                break
+            path_new = np.concatenate((path_start_to_alt_goal[:-1], path_alt_goal_to_end), axis=0)
+            break
+    return path_new
 
 
 # Define a function to get a random point near the bounds
@@ -42,6 +162,14 @@ def find_shortest_path(sim, p1, p2):
     # print("path_points : " + str(path_points))
     return geodesic_distance, path_points
 
+def find_shortest_path_multi(sim, p1, p2s):
+    paths = habitat_sim.MultiGoalShortestPath()
+    paths.requested_start = p1
+    paths.requested_ends = p2s
+    found_path = sim.pathfinder.find_path(paths)
+    geodesic_distance = paths.geodesic_distance
+    path_points = paths.points
+    return geodesic_distance, path_points
 
 def find_max_path_point_near_bounds(sim, source, num_targets=100, offset=5.0):
     max_length, max_point, max_path = 0, None, None
@@ -202,7 +330,7 @@ def display_map(topdown_map, key_points=None, savePath=None):
     plt.show(block=False)
 
 
-def display_trajectory(sim, path_points, savePath=None, display=False):
+def display_trajectory(sim, path_points, savePath=None, display=False, retTraj=False):
     meters_per_pixel = 0.025
     # scene_bb = sim.get_active_scene_graph().get_root_node().cumulative_bb
     height = path_points[0][1]  # scene_bb.y().min
@@ -231,13 +359,16 @@ def display_trajectory(sim, path_points, savePath=None, display=False):
     initial_angle = math.atan2(path_initial_tangent[0], path_initial_tangent[1])
     # draw the agent and trajectory on the map
     maps.draw_path(top_down_map, trajectory)
-    maps.draw_agent(
-        top_down_map, trajectory[0], initial_angle, agent_radius_px=8
-    )
+    # maps.draw_agent(
+        # top_down_map, trajectory[0], initial_angle, agent_radius_px=8
+    # )
     if display:
         print("\nDisplay the map with agent and path overlay:")
         display_map(top_down_map, savePath=savePath)
-    return top_down_map
+    if retTraj:
+        return top_down_map, np.array(trajectory)
+    else:
+        return top_down_map
 
 
 def display_images_along_path(sim, agent, path_points):
@@ -292,6 +423,8 @@ def quat_hab_from_Euler(e):
 def quat_np_to_mn(q):
     return mn.Quaternion([q[:3], q[-1]])
 
+def quat_hab_from_array(a):
+    return quat_from_magnum(mn.Quaternion.from_matrix(a))
 
 def quat_hab_to_direction(q):
     e = quat_hab_to_Euler(q)
@@ -305,6 +438,58 @@ def get_interPoint_orientations(points):
         orientations.append(quat_from_magnum(ori))
     return orientations
 
+def get_delta_theta(theta1, theta2):
+    # check for angle to take the shorter path along interpolation
+    if abs(theta1 - theta2) > np.pi:
+        if theta1 > theta2:
+            theta2 += 2*np.pi
+        else:
+            theta1 += 2*np.pi
+    return theta2 - theta1
+
+# WIP: a more intuitive orientation interpolatation  
+def interpolate_orientation_2(path_points, firstPointOrientation,lastPointOrientation, angle_threshold=np.pi/6):
+    R_init = np.array(quat_to_magnum(firstPointOrientation).to_matrix())
+    R_last = np.array(quat_to_magnum(lastPointOrientation).to_matrix())
+    # motion is in z-x plane of habitat's coordinate system
+    # get heading using x and z comp of Rz 
+    # negate to operate in a new coordinate system
+    theta_init = -np.arctan2(R_init[0,2], R_init[2,2])
+    theta_last = -np.arctan2(R_last[0,2], R_last[2,2])
+
+    Ps = []
+    Ps_SE2 = []
+    states = []
+    theta_prev = theta_init
+    for i in range(len(path_points)):
+        if i == len(path_points)-1:
+            thetaTarget = theta_last
+        else:
+            tangent = path_points[i+1] - path_points[i]
+            thetaTarget = np.arctan2(tangent[0],tangent[2])
+        loop = True
+        while loop:
+            delta_theta = get_delta_theta(theta_prev, thetaTarget)
+            print(i, len(Ps), theta_prev, angle_threshold, thetaTarget)
+            if  -angle_threshold < delta_theta < angle_threshold:
+                theta_prev = thetaTarget
+                loop = False
+            # store poses in habitat's coordinate system
+            R = SO3.Ry(-theta_prev)
+            P = SE3_from4x4([R, path_points[i]])
+            Ps.append(P)
+            # q_mn = mn.Quaternion([r2q(R.A)[1:],r2q(R.A)[0]])
+            q_mn = mn.Quaternion.rotation(mn.Rad(-theta_prev),mn.Vector3([0,1,0]))
+            states.append(habitat_sim.AgentState(position=path_points[i],rotation=quat_from_magnum(q_mn)))
+            # get theta back from R using x and z comp of its Rz 
+            theta_prev_rev_calc = -np.arctan2(R.A[0,2], R.A[2,2])
+            assert(abs(theta_prev - theta_prev_rev_calc) < 1e-3)
+
+            # store poses in SE2 (modified) coordinate system
+            Ps_SE2.append(SE2(path_points[i][2],path_points[i][0],theta_prev))
+            if loop:
+                theta_prev += np.sign(delta_theta)*angle_threshold
+    return Ps_SE2, Ps, states
 
 def interpolate_orientation(path_points, angle_threshold=np.pi / 6, firstPointOrientation=None,
                             lastPointOrientation=None, method='pure'):
@@ -342,6 +527,7 @@ def interpolate_orientation(path_points, angle_threshold=np.pi / 6, firstPointOr
         if ix == (len(path_points) - 1):
             final_orientation = quat_to_magnum(lastPointOrientation)
         else:
+            # TODO: Fails when tangent is 0 (i.e., two consecutive points are the same)
             final_orientation = mn.Quaternion.from_matrix(
                 mn.Matrix4.look_at(point, point + tangent, mn.Vector3(0, 1.0, 0)).rotation())
             # final_orientation = quat_np_to_mn(quat_hab_from_Euler(tangent))
@@ -766,19 +952,26 @@ def get_points_world_from_depth(depth, agent):
     return p3d_w
 
 
-def get_pathlength_GT(sim, agent, depth, semantic, goalPosition_w, randColors=None, display=False,
-                      instaIdx2catName=None):
-    H, W = depth.shape
-    K = getK_fromAgent(agent)
+def get_navigable_points_on_instances(sim, K, curr_state, depth, semantic, numSamples=20, intra_pls=False, filterByArea=False, filterInstaIDs=None, max_pl=100):
     instances = np.unique(semantic)
-    numSamples = 20
+    H, W = semantic.shape
     areaThresh = int(np.ceil(0.001 * H * W))
-    curr_state = agent.get_state()
+
+    instances_valid = []
+    for i, insta_idx in enumerate(instances):
+        if filterByArea and (semantic == insta_idx).sum() <= areaThresh:
+            continue
+        if filterInstaIDs is not None and insta_idx in filterInstaIDs:
+            continue
+        instances_valid.append(insta_idx)
+
+    if len(instances_valid) == 0:
+        return None
 
     # gather subset of points per instance
     p2d_c = []
     inds, pointsAll = [], []
-    for i, insta_idx in enumerate(instances):
+    for i, insta_idx in enumerate(instances_valid):
         points = np.argwhere(semantic == insta_idx)
         subInds = np.linspace(0, len(points) - 1, numSamples).astype(int)
         p2d_c.append(points[subInds])
@@ -789,16 +982,49 @@ def get_pathlength_GT(sim, agent, depth, semantic, goalPosition_w, randColors=No
 
     # get 3D points in world frame
     p3d_c = unproject2D(p2d_c[:, 0], p2d_c[:, 1], depth[p2d_c[:, 0], p2d_c[:, 1]], K, appendOnes=True, retMask=False)
-    p3d_w = get_point_camera2world(agent.get_state(), p3d_c.T)
+    p3d_w = get_point_camera2world(curr_state, p3d_c.T)
+    p_w_nav = np.array([sim.pathfinder.snap_point(p) for p in p3d_w[:, :3]])
+
+    # WIP: compute path lengths from segment to segment (intra image)
+    pls_intra = None
+    if intra_pls:
+        pls_intra = []
+        for pi in p_w_nav:
+            pls_intra.append(np.array([find_shortest_path(sim, pi, pj)[0] for pj in p_w_nav]))
+
+            # NOTE: the following is faster if reducing the tensor by min later
+            # pls_intra.append(np.array([find_shortest_path_multi(sim, pi, pj)[0] for pj in p_w_nav.reshape(len(instances_valid),numSamples,-1)]))
+        pls_intra = np.array(pls_intra).reshape(len(instances_valid), numSamples, len(instances_valid), numSamples)
+        # use masked max to avoid inf values instead of pls_intra.max(axis=(1, 3))
+        pls_intra_ma = np.ma.masked_array(pls_intra, mask=~np.isfinite(pls_intra))
+        pls_intra_min = pls_intra_ma.min(axis=(1, 3)).filled(max_pl)
+        pls_intra_avg = pls_intra_ma.mean(axis=(1, 3)).filled(max_pl)
+        pls_intra_max = pls_intra_ma.max(axis=(1, 3)).filled(max_pl)
+        pls_intra = np.stack([pls_intra_min, pls_intra_avg, pls_intra_max], axis=-1)
+
+    return p3d_c, p3d_w, p_w_nav, instances_valid, inds, pointsAll, pls_intra
+
+def get_pathlength_GT(sim, agent, depth, semantic, goalPosition_w, randColors=None, display=False,
+                      instaIdx2catName=None):
+
+    H, W = depth.shape
+    areaThresh = int(np.ceil(0.001 * H * W))
+    curr_state = agent.get_state()
+    K = getK_fromAgent(agent)
+
+    points_data = get_navigable_points_on_instances(sim, K, curr_state, depth, semantic)
+    if points_data is None:
+        return None, None, None
+    p3d_c, p3d_w, p_w_nav, instances, inds, pointsAll, _ = points_data
 
     # get shortest path from navigable points to goal
     # check if navigable point is farther than the original point
     # TODO: instead use normal to image plane as a measure
-    p_w_nav = np.array([sim.pathfinder.snap_point(p) for p in p3d_w[:, :3]])
     pls = np.array([find_shortest_path(sim, p, goalPosition_w)[0] for p in p_w_nav])
     eucDists_agent_to_p3dw = np.linalg.norm(curr_state.position - p3d_w[:, :3], axis=1)
     eucDists_agent_to_pwnav = np.linalg.norm(curr_state.position - p_w_nav[:, :3], axis=1)
     distsMask = eucDists_agent_to_p3dw > eucDists_agent_to_pwnav
+
     # reduce over multiple points in the same instance
     plsImg = np.zeros([H, W])
     pl_min_insta, points_min_pl, points_min_pl_nav = [], [], []
@@ -846,7 +1072,6 @@ def get_pathlength_GT(sim, agent, depth, semantic, goalPosition_w, randColors=No
         plt.colorbar()
         plt.show()
     return pls, plsDict, plsImg
-
 
 def get_agent_rotation_from_two_positions(position_src, position_dst):
     tangent = position_src - position_dst

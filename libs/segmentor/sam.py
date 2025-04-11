@@ -2,10 +2,15 @@ import sys
 import cv2
 import matplotlib.pyplot as plt
 
+
 from libs.commons import utils_viz
 
 # INSTALL: cd segment-anything; pip install -e .
-from libs.segmentor.segment_anything.segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+from libs.segmentor.segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+
+# ignore FutureWarning: torch.backends.cuda.sdp_kernel() is deprecated.
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="contextlib")
 
 
 class Seg_SAM:
@@ -16,22 +21,21 @@ class Seg_SAM:
         self.mask_generator = self.load_model(modelPath, device, sam_kwargs)
 
     def load_model(self, modelPath, device, sam_kwargs={}):
-        modelType = "vit_h"  # TODO enable other options
+        modelType = "vit_h" # TODO enable other options
         modelName = "sam_vit_h_4b8939.pth"
         print("Loading model from ", modelPath)
         sam = sam_model_registry[modelType](checkpoint=f"{modelPath}/{modelName}")
         sam.to(device=device)
         mask_generator = SamAutomaticMaskGenerator(sam, **sam_kwargs)
         return mask_generator
-
-    def segment(self, img):
-        if self.toRGB:  # cv2 reads in BGR
+    
+    def segment(self, img, textLabels=[]):
+        if self.toRGB: # cv2 reads in BGR
             img = img[:, :, ::-1]
         if self.resize_w is not None and self.resize_h is not None:
             img = cv2.resize(img, (self.resize_w, self.resize_h))
         masks = self.mask_generator.generate(img)
         return masks
-
 
 # Example usage:
 # INSTALL: cd segment-anything; pip install -e .
@@ -43,7 +47,7 @@ if __name__ == "__main__":
     imgName = sys.argv[1]
     modelPath = sys.argv[2]
 
-    img = cv2.imread(imgName)[:, :, ::-1]
+    img = cv2.imread(imgName)[:,:,::-1]
     seg = Seg_SAM(modelPath)
     masks = seg.mask_generator.generate(img)
 

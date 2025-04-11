@@ -1,12 +1,11 @@
-# Please refer to the original source https://github.com/krashkov/Belief-Propagation 
+# Please refer to the original source https://github.com/krashkov/Belief-Propagation
 
 import numpy as np
 import igraph as ig
 import pyvis.network as net
 import matplotlib.pyplot as plt
-
-
 # plt.rc("text", usetex=True)
+
 
 class factor:
     def __init__(self, variables=None, distribution=None):
@@ -43,7 +42,8 @@ def factor_product(x, y):
     if x.is_none() or y.is_none():
         raise Exception('One of the factors is None')
 
-    xy, xy_in_x_ind, xy_in_y_ind = np.intersect1d(x.get_variables(), y.get_variables(), return_indices=True)
+    xy, xy_in_x_ind, xy_in_y_ind = np.intersect1d(
+        x.get_variables(), y.get_variables(), return_indices=True)
 
     if xy.size == 0:
         raise Exception('Factors do not have common variables')
@@ -51,14 +51,16 @@ def factor_product(x, y):
     if not np.all(x.get_shape()[xy_in_x_ind] == y.get_shape()[xy_in_y_ind]):
         raise Exception('Common variables have different order')
 
-    x_not_in_y = np.setdiff1d(x.get_variables(), y.get_variables(), assume_unique=True)
-    y_not_in_x = np.setdiff1d(y.get_variables(), x.get_variables(), assume_unique=True)
+    x_not_in_y = np.setdiff1d(
+        x.get_variables(), y.get_variables(), assume_unique=True)
+    y_not_in_x = np.setdiff1d(
+        y.get_variables(), x.get_variables(), assume_unique=True)
 
     x_mask = np.isin(x.get_variables(), xy, invert=True)
     y_mask = np.isin(y.get_variables(), xy, invert=True)
 
-    x_ind = np.array([-1] * len(x.get_variables()), dtype=int)
-    y_ind = np.array([-1] * len(y.get_variables()), dtype=int)
+    x_ind = np.array([-1]*len(x.get_variables()), dtype=int)
+    y_ind = np.array([-1]*len(y.get_variables()), dtype=int)
 
     x_ind[x_mask] = np.arange(np.sum(x_mask))
     y_ind[y_mask] = np.arange(np.sum(y_mask)) + np.sum(np.invert(y_mask))
@@ -66,13 +68,15 @@ def factor_product(x, y):
     x_ind[xy_in_x_ind] = np.arange(len(xy)) + np.sum(x_mask)
     y_ind[xy_in_y_ind] = np.arange(len(xy))
 
-    x_distribution = np.moveaxis(x.get_distribution(), range(len(x_ind)), x_ind)
-    y_distribution = np.moveaxis(y.get_distribution(), range(len(y_ind)), y_ind)
+    x_distribution = np.moveaxis(
+        x.get_distribution(), range(len(x_ind)), x_ind)
+    y_distribution = np.moveaxis(
+        y.get_distribution(), range(len(y_ind)), y_ind)
 
-    res_distribution = x_distribution[tuple([slice(None)] * len(x.get_variables()) + [None] * len(y_not_in_x))] \
-                       * y_distribution[tuple([None] * len(x_not_in_y) + [slice(None)])]
+    res_distribution = x_distribution[tuple([slice(None)]*len(x.get_variables())+[None]*len(y_not_in_x))] \
+        * y_distribution[tuple([None]*len(x_not_in_y)+[slice(None)])]
 
-    return factor(list(x_not_in_y) + list(xy) + list(y_not_in_x), res_distribution)
+    return factor(list(x_not_in_y)+list(xy)+list(y_not_in_x), res_distribution)
 
 
 def factor_marginalization(x, variables):
@@ -84,7 +88,8 @@ def factor_marginalization(x, variables):
     if not np.all(np.in1d(variables, x.get_variables())):
         raise Exception('Factor do not contain given variables')
 
-    res_variables = np.setdiff1d(x.get_variables(), variables, assume_unique=True)
+    res_variables = np.setdiff1d(
+        x.get_variables(), variables, assume_unique=True)
     res_distribution = np.sum(x.get_distribution(),
                               tuple(np.where(np.isin(x.get_variables(), variables))[0]))
 
@@ -101,7 +106,8 @@ def factor_reduction(x, variable, value):
     if value >= x.get_shape()[np.where(variable == x.get_variables())[0]]:
         raise Exception('Incorrect value of given variable')
 
-    res_variables = np.setdiff1d(x.get_variables(), variable, assume_unique=True)
+    res_variables = np.setdiff1d(
+        x.get_variables(), variable, assume_unique=True)
     res_distribution = np.take(x.get_distribution(),
                                value,
                                int(np.where(variable == x.get_variables())[0]))
@@ -180,7 +186,8 @@ class factor_graph:
 
         # Create corresponding edges
         start = self._graph.vs.find(name=f_name).index
-        edge_list = [tuple([start, self._graph.vs.find(name=i).index]) for i in factor_.get_variables()]
+        edge_list = [tuple([start, self._graph.vs.find(name=i).index])
+                     for i in factor_.get_variables()]
         self._graph.add_edges(edge_list)
 
     # ----------------------- Rank functions -------
@@ -198,7 +205,8 @@ class factor_graph:
             if factor_.is_none():
                 self._graph.vs.find(name=v_name)['rank'] = None
             else:
-                self._graph.vs.find(name=v_name)['rank'] = factor_.get_shape()[counter]
+                self._graph.vs.find(name=v_name)[
+                    'rank'] = factor_.get_shape()[counter]
 
     # ----------------------- Variable node functions -------
 
@@ -263,7 +271,8 @@ def plot_factor_graph(x):
 
     # Vertices
     label = x.get_graph().vs['name']
-    color = ['#2E2E2E' if i is True else '#F2F2F2' for i in x.get_graph().vs['is_factor']]
+    color = [
+        '#2E2E2E' if i is True else '#F2F2F2' for i in x.get_graph().vs['is_factor']]
     graph.add_nodes(range(len(x.get_graph().vs)), label=label, color=color)
 
     # Edges
@@ -285,25 +294,28 @@ class belief_propagation():
     def belief(self, v_name):
         incoming_messages = []
         for f_name_neighbor in self.__pgm.get_graph().vs[self.__pgm.get_graph().neighbors(v_name)]['name']:
-            incoming_messages.append(self.get_factor2variable_msg(f_name_neighbor, v_name))
+            incoming_messages.append(
+                self.get_factor2variable_msg(f_name_neighbor, v_name))
         return self.__normalize_msg(joint_distribution(incoming_messages))
 
     # ----------------------- Variable to factor ------------
     def get_variable2factor_msg(self, v_name, f_name):
         key = (v_name, f_name)
         if key not in self.__msg:
-            self.__msg[key] = self.__compute_variable2factor_msg(v_name, f_name)
+            self.__msg[key] = self.__compute_variable2factor_msg(
+                v_name, f_name)
         return self.__msg[key]
 
     def __compute_variable2factor_msg(self, v_name, f_name):
         incoming_messages = []
         for f_name_neighbor in self.__pgm.get_graph().vs[self.__pgm.get_graph().neighbors(v_name)]['name']:
             if f_name_neighbor != f_name:
-                incoming_messages.append(self.get_factor2variable_msg(f_name_neighbor, v_name))
+                incoming_messages.append(
+                    self.get_factor2variable_msg(f_name_neighbor, v_name))
 
         if not incoming_messages:
             # if the variable does not have its own distribution
-            return factor([v_name], np.array([1.] * self.__pgm.get_graph().vs.find(name=v_name)['rank']))
+            return factor([v_name], np.array([1.]*self.__pgm.get_graph().vs.find(name=v_name)['rank']))
         else:
             # Since all messages have the same dimension (1, order of v_name) the expression after
             # ```return``` is equivalent to ```factor(v_name, np.prod(incoming_messages))```
@@ -313,7 +325,8 @@ class belief_propagation():
     def get_factor2variable_msg(self, f_name, v_name):
         key = (f_name, v_name)
         if key not in self.__msg:
-            self.__msg[key] = self.__compute_factor2variable_msg(f_name, v_name)
+            self.__msg[key] = self.__compute_factor2variable_msg(
+                f_name, v_name)
         return self.__msg[key]
 
     def __compute_factor2variable_msg(self, f_name, v_name):
@@ -321,7 +334,8 @@ class belief_propagation():
         marginalization_variables = []
         for v_name_neighbor in self.__pgm.get_graph().vs[self.__pgm.get_graph().neighbors(f_name)]['name']:
             if v_name_neighbor != v_name:
-                incoming_messages.append(self.get_variable2factor_msg(v_name_neighbor, f_name))
+                incoming_messages.append(
+                    self.get_variable2factor_msg(v_name_neighbor, f_name))
                 marginalization_variables.append(v_name_neighbor)
         return self.__normalize_msg(factor_marginalization(
             joint_distribution(incoming_messages),
@@ -330,7 +344,7 @@ class belief_propagation():
 
     # ----------------------- Other -------------------------
     def __normalize_msg(self, message):
-        return factor(message.get_variables(), message.get_distribution() / np.sum(message.get_distribution()))
+        return factor(message.get_variables(), message.get_distribution()/np.sum(message.get_distribution()))
 
 
 class loopy_belief_propagation():
@@ -350,29 +364,32 @@ class loopy_belief_propagation():
         # Initialization of messages
         for edge in self.__pgm.get_graph().es:
             start_index, end_index = edge.tuple[0], edge.tuple[1]
-            start_name, end_name = self.__pgm.get_graph().vs[start_index]['name'], self.__pgm.get_graph().vs[end_index][
-                'name']
+            start_name, end_name = self.__pgm.get_graph(
+            ).vs[start_index]['name'], self.__pgm.get_graph().vs[end_index]['name']
 
             if self.__pgm.get_graph().vs[start_index]['is_factor']:
-                self.__msg[(start_name, end_name)] = factor([end_name], np.array(
-                    [1.] * self.__pgm.get_graph().vs[end_index]['rank']))
+                self.__msg[(start_name, end_name)] = factor([end_name],   np.array(
+                    [1.]*self.__pgm.get_graph().vs[end_index]['rank']))
             else:
                 self.__msg[(start_name, end_name)] = factor([start_name], np.array(
-                    [1.] * self.__pgm.get_graph().vs[start_index]['rank']))
-            self.__msg[(end_name, start_name)] = self.__msg[(start_name, end_name)]
+                    [1.]*self.__pgm.get_graph().vs[start_index]['rank']))
+            self.__msg[(end_name, start_name)
+                       ] = self.__msg[(start_name, end_name)]
 
             self.__msg_new[(start_name, end_name)] = 0
             self.__msg_new[(end_name, start_name)] = 0
 
     def belief(self, v_name, num_iter):
         if self.__t > num_iter:
-            raise Exception('Invalid number of iterations. Current number: ' + str(self.__t))
+            raise Exception(
+                'Invalid number of iterations. Current number: ' + str(self.__t))
         elif self.__t < num_iter:
             self.__loop(num_iter)
 
         incoming_messages = []
         for f_name_neighbor in self.__pgm.get_graph().vs[self.__pgm.get_graph().neighbors(v_name)]['name']:
-            incoming_messages.append(self.get_factor2variable_msg(f_name_neighbor, v_name))
+            incoming_messages.append(
+                self.get_factor2variable_msg(f_name_neighbor, v_name))
         return self.__normalize_msg(joint_distribution(incoming_messages))
 
     # ----------------------- Variable to factor ------------
@@ -383,10 +400,11 @@ class loopy_belief_propagation():
         incoming_messages = []
         for f_name_neighbor in self.__pgm.get_graph().vs[self.__pgm.get_graph().neighbors(v_name)]['name']:
             if f_name_neighbor != f_name:
-                incoming_messages.append(self.get_factor2variable_msg(f_name_neighbor, v_name))
+                incoming_messages.append(
+                    self.get_factor2variable_msg(f_name_neighbor, v_name))
 
         if not incoming_messages:
-            return factor([v_name], np.array([1] * self.__pgm.get_graph().vs.find(name=v_name)['rank']))
+            return factor([v_name], np.array([1]*self.__pgm.get_graph().vs.find(name=v_name)['rank']))
         else:
             return self.__normalize_msg(joint_distribution(incoming_messages))
 
@@ -399,7 +417,8 @@ class loopy_belief_propagation():
         marginalization_variables = []
         for v_name_neighbor in self.__pgm.get_graph().vs[self.__pgm.get_graph().neighbors(f_name)]['name']:
             if v_name_neighbor != v_name:
-                incoming_messages.append(self.get_variable2factor_msg(v_name_neighbor, f_name))
+                incoming_messages.append(
+                    self.get_variable2factor_msg(v_name_neighbor, f_name))
                 marginalization_variables.append(v_name_neighbor)
         return self.__normalize_msg(factor_marginalization(
             joint_distribution(incoming_messages),
@@ -412,17 +431,21 @@ class loopy_belief_propagation():
         while self.__t < num_iter:
             for edge in self.__pgm.get_graph().es:
                 start_index, end_index = edge.tuple[0], edge.tuple[1]
-                start_name, end_name = self.__pgm.get_graph().vs[start_index]['name'], \
-                self.__pgm.get_graph().vs[end_index]['name']
+                start_name, end_name = self.__pgm.get_graph(
+                ).vs[start_index]['name'], self.__pgm.get_graph().vs[end_index]['name']
 
                 if self.__pgm.get_graph().vs[start_index]['is_factor']:
-                    self.__msg_new[(start_name, end_name)] = self.__compute_factor2variable_msg(start_name, end_name)
-                    self.__msg_new[(end_name, start_name)] = self.__compute_variable2factor_msg(end_name, start_name)
+                    self.__msg_new[(start_name, end_name)] = self.__compute_factor2variable_msg(
+                        start_name, end_name)
+                    self.__msg_new[(end_name, start_name)] = self.__compute_variable2factor_msg(
+                        end_name, start_name)
                 else:
-                    self.__msg_new[(start_name, end_name)] = self.__compute_variable2factor_msg(start_name, end_name)
-                    self.__msg_new[(end_name, start_name)] = self.__compute_factor2variable_msg(end_name, start_name)
+                    self.__msg_new[(start_name, end_name)] = self.__compute_variable2factor_msg(
+                        start_name, end_name)
+                    self.__msg_new[(end_name, start_name)] = self.__compute_factor2variable_msg(
+                        end_name, start_name)
             self.__msg.update(self.__msg_new)
             self.__t += 1
 
     def __normalize_msg(self, message):
-        return factor(message.get_variables(), message.get_distribution() / np.sum(message.get_distribution()))
+        return factor(message.get_variables(), message.get_distribution()/np.sum(message.get_distribution()))

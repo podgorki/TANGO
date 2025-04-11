@@ -114,7 +114,7 @@ def match_mapMasks_with_goalMask(mapMasks, goalMaskBinary):
 
 def get_goalNodeIdx(mapPath, G, nodeID_to_imgRegionIdx, task_type):
     """
-    returns the node index of the segment in the map graph that has the highest IoU with the goal object in the last image of the episode's teach run
+    returns the node index of the segment in the map graph that has the highest IoU with the goal object in the last image of the episode's teach run 
     """
     goalImgIdx, goalMaskBinary, goal_instance_id = get_goalMaskBinary(mapPath, task_type)
 

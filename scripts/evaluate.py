@@ -43,8 +43,8 @@ def plot_collision_histogram(collision_percent: np.ndarray, save_path: Path, sho
 
 def run(args):
     p = Path(args.path_results)
-    globbed_txt = list(p.glob('*.txt'))
-    globbed_csv = list(p.glob('*.csv',))
+    globbed_txt = list(p.glob('*/*.txt'))
+    globbed_csv = list(p.glob('*/*.csv',))
     bad_episodes = [
         'results',
         'CrMo8WxCyVb_0000016_chair_411_',
@@ -191,5 +191,4 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    args.path_results = '/home/hamish/Documents/robohop/results/tango/reconfirm/val/hard/20250305-13-19-13_pixnav_topological'
     run(args)
