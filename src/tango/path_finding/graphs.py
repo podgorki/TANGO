@@ -1,8 +1,8 @@
-from typing import Optional, Iterator
-import numpy as np
 import heapq
 import torch
+import numpy as np
 import networkx as nx
+from typing import Optional, Iterator
 
 
 # guided by: https://www.redblobgames.com/pathfinding/a-star/implementation.html

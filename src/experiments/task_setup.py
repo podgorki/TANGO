@@ -1,43 +1,35 @@
 import os
+import cv2
+import torch
+import logging
+import habitat_sim
 import numpy as np
 from pathlib import Path
-import yaml
-import torch
-import cv2
 from datetime import datetime
-import habitat_sim
 
-import logging
+from src.plotting import plot_utils, utils_visualize
+from src.tango.robohop.controller import control_with_mask
+from src.utils import setup_sim_plots, build_intrinsics, apply_velocity, robohop_to_pixnav_goal_mask, has_collided
+from src.common import utils_data, utils, third_party_model_loader
+from src.common.utils_sim_traj import get_pathlength_GT, find_shortest_path
+from src.logger.visualizer import Visualizer
+from src.logger.level import LOG_LEVEL
 
 logger = logging.getLogger("[Task Setup]")  # logger level is explicitly set below by LOG_LEVEL
-
-from libs.experiments import model_loader
-from libs.path_finding import plot_utils
-from libs.control.robohop import control_with_mask
-
-from libs.commons import utils_viz, utils_data
-from libs.utils import setup_sim_plots, build_intrinsics, apply_velocity, robohop_to_pixnav_goal_mask, has_collided
-from libs.logger.visualizer import Visualizer
-
-from libs.logger.level import LOG_LEVEL
-
 logger.setLevel(LOG_LEVEL)
-
-import utils
-from utils_sim_traj import get_pathlength_GT, find_shortest_path, get_agent_rotation_from_two_positions
 
 
 class Episode:
     def __init__(self, args, path_episode, scene_name_hm3d, path_results_folder, preload_data={}):
         if args is None:
-            args = get_default_args()
+            args = utils.get_default_args()
         self.args = args
         self.steps = 0  # only used when running real in remote mode
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.path_episode = path_episode
         self.path_episode_results = path_results_folder / self.path_episode.parts[-1]
         self.path_episode_results.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Running {self.path_episode=}...")
+
         self.scene_name_hm3d = scene_name_hm3d
         self.preload_data = preload_data
         if args.env == 'sim':
@@ -49,12 +41,9 @@ class Episode:
             self.final_goal_position = None
             self.traversable_class_indices = None
 
-        # map params
-        self.graph_instance_ids, self.graph_path_lengths = None, None
-
         # data params
-        # TODO: multiple hfov variables
-        self.fov_deg = self.args.sim["hfov"] if np.isin(['robohop', 'tango'], self.args.method.lower()).any() else 79
+        is_robohop_tango =  np.isin(['robohop', 'tango'], self.args.method.lower()).any()
+        self.fov_deg = self.args.sim["hfov"] if is_robohop_tango else 79
         self.hfov_radians = np.pi * self.fov_deg / 180
 
         # experiment params
@@ -65,7 +54,7 @@ class Episode:
         # controller params
         self.time_delta = 0.1
         self.theta_control = np.nan
-        self.velocity_control = 0.05 if np.isin(['robohop', 'tango'], self.args.method.lower()).any() else np.nan
+        self.velocity_control = 0.05 if is_robohop_tango else np.nan
         self.pid_steer_values = [.25, 0, 0] if self.args.method.lower(
         ) == 'tango' else []
         self.discrete_action = -1
@@ -80,13 +69,14 @@ class Episode:
         self.set_controller()
 
         # setup visualizer
-        self.vis_img_default = np.zeros(
-            (self.image_height, self.image_width, 3)).astype(np.uint8)
+        self.vis_img_default = np.zeros((self.image_height, self.image_width, 3)).astype(np.uint8)
         self.vis_img = self.vis_img_default.copy()
-        self.video_cfg = {"savepath": str(self.path_episode_results / 'repeat.mp4'),
-                          "codec": 'mp4v', "fps": 6}
-        self.vis = Visualizer(self.sim, self.agent,
-                              self.scene_name_hm3d, env=self.args.env)
+        self.video_cfg = {
+            "savepath": str(self.path_episode_results / 'repeat.mp4'),
+            "codec": 'mp4v',
+            "fps": 6
+        }
+        self.vis = Visualizer(self.sim, self.agent, self.scene_name_hm3d, env=self.args.env)
         if self.args.env == 'sim':
             self.vis.draw_teach_run(self.agent_states)
 
@@ -116,7 +106,8 @@ class Episode:
         self.vel_control = vel_control
 
         self.traversable_class_indices, self.bad_goal_classes, self.cull_instance_ids = get_semantic_filters(
-            self.sim, self.args.traversable_class_names)
+            self.sim, self.args.traversable_class_names
+        )
 
     def ready_agent(self):
         # get the initial agent state for this episode (i.e. the starting pose)
@@ -127,6 +118,10 @@ class Episode:
         )
         self.agent_positions_in_map = np.array([s.position for s in self.agent_states])
         # set the final goal state for this episode
+        self.final_goal_state = None
+        self.final_goal_position = None
+        self.final_goal_image_idx = None
+
         self.final_goal_position = self.agent_states[-1].position
         self.final_goal_image_idx = len(self.agent_states) - 1
 
@@ -147,64 +142,16 @@ class Episode:
             p2=self.final_goal_position
         )[0]
 
-    # def set_goal_generator(self):
-    #     goal_source = self.args.goal_source.lower()
-    #     if goal_source == 'topological':
-    #         segmentor_name = self.args.segmentor.lower()
-    #
-    #         self.segmentor = self.preload_data['segmentor']
-    #         cfg_goalie = self.args.goal_gen
-    #         cfg_goalie.update(
-    #             {"use_gt_localization": self.args.use_gt_localization})
-    #         if segmentor_name == 'sam2':
-    #             assert cfg_goalie['matcher_name'] == 'sam2', 'TODO: is other matcher implemented for this segmentor?'
-    #             cfg_goalie.update({"sam2_tracker": self.segmentor})
-    #
-    #         self.goal_object_id, goalNodeIdx = None, None
-    #
-    #         self.goalie = goal_gen.Goal_Gen(
-    #             W=self.image_width,
-    #             H=self.image_height,
-    #             G=self.map_graph,
-    #             map_path=str(self.path_episode),
-    #             poses=self.agent_states,
-    #             task_type=self.args.task_type,
-    #             cfg=cfg_goalie
-    #         )
-    #
-    #         if self.args.use_gt_localization:
-    #             self.goalie.localizer.localizedImgIdx, _ = self.get_GT_closest_map_img()
-    #
-    #         # to save time over storage
-    #         if not self.goalie.planner_g.precomputed_allPathLengths_found and cfg_goalie[
-    #             'rewrite_graph_with_allPathLengths']:
-    #             logger.info("Rewritng graph with allPathLengths")
-    #             allPathLengths = self.map_graph.graph.get('allPathLengths', {})
-    #             allPathLengths.update(
-    #                 {cfg_goalie['edge_weight_str']: self.goalie.planner_g.allPathLengths})
-    #             self.map_graph.graph['allPathLengths'] = allPathLengths
-    #             pickle.dump(self.map_graph, open(self.path_graph, "wb"))
-    #
-    #     elif goal_source == 'gt_metric':
-    #         # map_graph is not needed
-    #         pass
-    #     else:
-    #         raise NotImplementedError(
-    #             f'{self.args.goal_source=} is not defined...')
-
     def get_goal_object_id(self):
         if self.args.reverse:
             self.goal_object_id = utils_data.find_reverse_traverse_goal(
                 self.agent, self.sim, self.final_goal_state, self.map_graph)
             if not os.path.exists(f"{self.path_episode}/reverse_goal.npy"):
-                print(
-                    f"Saving reverse goal to {self.path_episode}/reverse_goal.npy")
-                np.save(f"{self.path_episode}/reverse_goal.npy",
-                        {"instance_id": self.goal_object_id, "agent_state": self.final_goal_state})
-
-        elif self.args.task_type == 'alt_goal':
-            self.goal_object_id = utils_data.get_goal_info_alt_goal(
-                self.path_episode)[-1]
+                print(f"Saving reverse goal to {self.path_episode}/reverse_goal.npy")
+                np.save(
+                    f"{self.path_episode}/reverse_goal.npy",
+                    {"instance_id": self.goal_object_id, "agent_state": self.final_goal_state}
+                )
         else:
             self.goal_object_id = int(str(self.path_episode).split('_')[-2])
 
@@ -215,8 +162,8 @@ class Episode:
 
         # select the type of controller to use
         if control_method == 'tango':
-            from libs.control.pid import SteerPID
-            from libs.control.tango import TangoControl
+            from src.tango.pid import SteerPID
+            from src.tango.tango import TangoControl
 
             pid_steer = SteerPID(
                 Kp=self.pid_steer_values[0],
@@ -244,22 +191,13 @@ class Episode:
             )
 
         elif control_method == 'pixnav':
-            from libs.pixnav.policy_agent import Policy_Agent
-            from libs.pixnav.constants import POLICY_CHECKPOINT
+            from third_party.pixnav.policy_agent import Policy_Agent
+            from third_party.pixnav.constants import POLICY_CHECKPOINT
 
             goal_controller = Policy_Agent(model_path=POLICY_CHECKPOINT)
             self.collided = False
 
         self.goal_controller = goal_controller
-
-    def get_GT_closest_map_img(self):
-        dists = np.linalg.norm(self.agent_positions_in_map - self.agent.get_state().position, axis=1)
-        topK = 2 * self.args.goal_gen['loc_radius']
-        closest_idxs = np.argsort(dists)[:topK]
-        # approximately subsample ref indices
-        closest_idxs = sorted(closest_idxs)[::self.args.goal_gen['subsample_ref']]
-        closest_idx = np.argmin(dists)
-        return closest_idx, closest_idxs
 
     def get_goal(self, rgb, depth, semantic_instance):
         self.goal_mask = None
@@ -287,7 +225,7 @@ class Episode:
             )
             self.theta_control = -self.theta_control
             self.vis_img = (
-                (255.0 - 255 * (utils_viz.goal_mask_to_vis(goals_image, outlier_min_val=255))).astype(np.uint8)
+                (255.0 - 255 * (utils_visualize.goal_mask_to_vis(goals_image, outlier_min_val=255))).astype(np.uint8)
             )
         # the new and (hopefully) improved controller
         elif control_method == 'tango':
@@ -299,7 +237,7 @@ class Episode:
             )
             if goals_image_ is not None:
                 self.vis_img = (
-                        255.0 - 255 * (utils_viz.goal_mask_to_vis(goals_image_, outlier_min_val=255))).astype(np.uint8)
+                        255.0 - 255 * (utils_visualize.goal_mask_to_vis(goals_image_, outlier_min_val=255))).astype(np.uint8)
             else:
                 self.vis_img = self.vis_img_default.copy()
 
@@ -342,7 +280,7 @@ class Episode:
                 velocity=self.velocity_control,
                 steer=-self.theta_control,  # opposite y axis
                 time_step=self.time_delta
-            )  # will add velocity control once steering is working
+            )  # will add velocity robohop once steering is working
 
     def step_real(self, rgb):
         self.step_real_complete = False
@@ -383,8 +321,7 @@ class Episode:
         self.distance_to_goal = find_shortest_path(
             self.sim, p1=current_robot_state.position, p2=self.final_goal_position)[0]
         if self.distance_to_goal <= self.args.threshold_goal_distance:
-            logger.info(
-                f'\nWinner! dist to goal: {self.distance_to_goal:.6f}\n')
+            print(f'\nWinner! dist to goal: {self.distance_to_goal:.6f}\n')
             self.success_status = 'success'
             done = True
         return done
@@ -447,7 +384,7 @@ class Episode:
         goals_image = None
         semantic_instance_vis = semantic_instance
 
-        goal_mask_vis = utils_viz.goal_mask_to_vis(self.goal_mask)
+        goal_mask_vis = utils_visualize.goal_mask_to_vis(self.goal_mask)
         goal = (self.goal_mask == self.goal_mask.min())
         if self.args.method.lower() == 'pixnav':
             goal += (self.pixnav_goal_mask /
@@ -475,8 +412,7 @@ class Episode:
 
         if self.args.save_vis:
             plt.tight_layout()
-            plt.savefig(self.dirname_vis_episode /
-                        f'{step:04d}.jpg', bbox_inches='tight', pad_inches=0)
+            plt.savefig(self.dirname_vis_episode / f'{step:04d}.jpg', bbox_inches='tight', pad_inches=0)
         else:
             plt.pause(.05)  # pause a bit so that plots are updated
 
@@ -529,7 +465,7 @@ def preload_models(args):
                 args.infer_traversable and args.control_method.lower() == 'tango'
         ) else None
 
-        segmentor = model_loader.get_segmentor(
+        segmentor = third_party_model_loader.get_segmentor(
             args.segmentor,
             args.sim["width"],
             args.sim["height"],
@@ -539,31 +475,11 @@ def preload_models(args):
 
     depth_model = None
     if args.infer_depth:
-        depth_model = model_loader.get_depth_model()
+        depth_model = third_party_model_loader.get_depth_model()
 
     # collect preload data that each episode instance can reuse
     preload_data = {"segmentor": segmentor, "depth_model": depth_model}
     return preload_data
-
-
-def set_start_state_reverse_orientation(agent_states, start_index):
-    start_state = agent_states[start_index]
-    # compute orientation, looking at the next GT forward step
-    lookat_index = start_index - 1
-    if lookat_index < 0:
-        raise ValueError('Cannot reverse orientation at the start of the episode.')
-    # search/validate end_idx in reverse direction
-    for k in range(lookat_index, -1, -1):
-        # keep looking if agent hasn't moved
-        if np.linalg.norm(start_state.position - agent_states[k].position) <= 0.1:
-            continue
-        else:
-            lookat_index = k
-            break
-    # looking in the reverse direction
-    start_state.rotation = get_agent_rotation_from_two_positions(
-        start_state.position, agent_states[lookat_index].position)
-    return start_state
 
 
 def closest_state(sim, agent_states, distance_threshold: float, final_position=None):
@@ -596,11 +512,6 @@ def select_starting_state(sim, args, agent_states, final_position=None):
     return start_state
 
 
-def save_dict(full_save_path, config_dict):
-    with open(full_save_path, 'w') as f:
-        yaml.dump(config_dict, f, default_flow_style=False)
-
-
 def get_semantic_filters(sim, traversable_class_names):
     # setup is/is not traversable and which goals are banned (for the simulator runs)
     instance_index_to_name_map = utils.get_instance_index_to_name_mapping(
@@ -621,57 +532,3 @@ def get_semantic_filters(sim, traversable_class_names):
     cull_instance_ids = (instance_index_to_name_map[:, 0][
         np.isin(instance_index_to_name_map[:, 1], cull_categories)]).astype(int)
     return traversable_class_indices, bad_goal_classes, cull_instance_ids
-
-
-def dict_to_args(cfg_dict):
-    args = type('', (), {})()
-    for k, v in cfg_dict.items():
-        setattr(args, k, v)
-    return args
-
-
-def get_default_args():
-    args_dict = {
-        'method': 'tango',
-        'goal_source': 'gt_metric',
-        'graph_filename': None,
-        'max_start_distance': 'easy',
-        'threshold_goal_distance': 0.5,
-        'debug': False,
-        'max_steps': 500,
-        'run_list': '',
-        'path_run': '',
-        'path_models': None,
-        'log_robot': True,
-        'save_vis': False,
-        'plot': False,
-        'infer_depth': False,
-        'infer_traversable': False,
-        'segmentor': 'fast_sam',
-        'task_type': 'original',
-        'use_gt_localization': False,
-        'env': 'sim',
-        'goal_gen': {
-            'textLabels': [],
-            'matcher_name': 'lightglue',
-            'map_matcher_name': 'lightglue',
-            'geometric_verification': True,
-            'match_area': False,
-            'goalNodeIdx': None,
-            'edge_weight_str': None,
-            'use_goal_nbrs': False,
-            'plan_da_nbrs': False,
-            'rewrite_graph_with_allPathLengths': False,
-            'loc_radius': 4,
-            'do_track': False,
-            'subsample_ref': 1,
-        },
-        'sim': {
-            'width': 320,
-            'height': 240,
-            'hfov': 120,
-            'sensor_height': 0.4
-        },
-    }
-    # args_dict as attributes of args
-    return dict_to_args(args_dict)

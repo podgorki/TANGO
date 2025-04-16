@@ -3,17 +3,27 @@ import numpy as np
 import kornia as K
 from kornia import morphology as morph
 from scipy.interpolate import splrep, BSpline
-from libs.path_finding.graphs import CostMapGraphNX
-from libs.utils import unproject_points
-from libs.control.robohop import control_with_mask
+
+from src.utils import unproject_points
+from src.tango.robohop.controller import control_with_mask
+from src.tango.path_finding.graphs import CostMapGraphNX
 
 
 class TangoControl:
 
     @torch.inference_mode
-    def __init__(self, pid_steer, traversable_classes, default_velocity_control: float,
-                 h_image: int, w_image: int, intrinsics: torch.Tensor = torch.eye(3),
-                 time_delta: float = 0.1, grid_size: float = 0.1, device: str = 'cpu'):
+    def __init__(
+            self,
+            pid_steer,
+            traversable_classes,
+            default_velocity_control: float,
+            h_image: int,
+            w_image: int,
+            intrinsics: torch.Tensor = torch.eye(3),
+            time_delta: float = 0.1,
+            grid_size: float = 0.1,
+            device: str = 'cpu'
+    ):
         self.default_velocity_control = default_velocity_control
         self.device = device
         self.traversable_classes = torch.from_numpy(traversable_classes).to(int).to(self.device)  # [25, 30, 37]
@@ -209,7 +219,7 @@ class TangoControl:
             path_traversable_bev = cmg.get_path(self.start_bev, goal_bev)  # [5:]
             if path_traversable_bev.shape[0] > 1:
                 self.point_poses = self.get_point_poses_numpy(path_traversable_bev)
-                # find the theta control signal: thetaj current pose, thetai target pose
+                # find the theta robohop signal: thetaj current pose, thetai target pose
                 thetaj, thetai = self.point_poses[0, 2], self.point_poses[1, 2]
                 theta_control = self.pid_steer.control(
                     value_goal=thetai,

@@ -1,6 +1,5 @@
 import numpy as np
-
-from libs.commons import utils_viz
+from src.plotting import utils_visualize
 
 
 def control_with_mask(
@@ -47,8 +46,8 @@ def control_with_mask(
     w = -x_off * gain / (width // 2)
     v = v
 
-    colors, norm = utils_viz.value2color(weights, cmName='viridis')
-    visualize_image = utils_viz.visualize_flow(
+    colors, norm = utils_visualize.value_to_colour(weights, cmName='viridis')
+    visualize_image = utils_visualize.visualize_flow(
         coords, coords_ref, goal_mask, colors, norm, weights, fwdVals=None, display=False,
         colorbar=False
     ).astype(float) / 255.0

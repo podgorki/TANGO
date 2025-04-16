@@ -146,3 +146,27 @@ unzip hm3d_00853-5cdEh9F2hJL.zip
 python scripts/hab_semantic_teleop.py
 
 ```
+
+
+### from instal script
+
+conda install -y -c conda-forge python=3.10
+conda install -y ffmpeg
+
+TMPDIR=$work/tmp/ pip install torch torchvision --force-reinstall --pre --extra-index-url https://download.pytorch.org/whl/cu118
+
+cd libs/segmentor/sam2/
+TMPDIR=$work/tmp/ pip install -e .
+
+TMPDIR=$work/tmp/ pip install opencv-python networkx h5py natsort einops scikit-learn kornia pgmpy python-igraph pyvis tyro scikit-image ipykernel spatialmath-python gdown utm seaborn wandb kaggle yacs cmake==3.14.3
+
+cd ../habitat-sim/
+python setup.py install --cmake
+
+cd ../habitat-lab/
+git checkout v0.2.4
+pip install -e habitat-lab
+
+pip install huggingface_hub==0.25.0 ultralytics
+pip install warmup-scheduler diffusers==0.11.1 efficientnet_pytorch vit_pytorch lmdb prettytable
+

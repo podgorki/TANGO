@@ -21,15 +21,12 @@ import torch.nn.functional as F
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
 
+import kornia as K
 from pathlib import Path
 import ultralytics.models.fastsam as fastsam
 from ultralytics.utils.ops import scale_masks
 from PIL import Image
-
-from libs.commons import utils_viz
-import kornia as K
 
 
 class FastSamClass:
@@ -60,7 +57,7 @@ class FastSamClass:
         return self.process_results(results=results)
 
     @torch.inference_mode()
-    def segment(self, image: np.array, retMaskAsDict: bool = True, textLabels: list = []) -> tuple:
+    def segment(self, image: np.array, return_mask_as_dict: bool = True, text_labels: list = []) -> tuple:
         results = self.predictor(image)[0]
         if results.masks is None:
             print(f"No masks found")
@@ -70,8 +67,8 @@ class FastSamClass:
         else:
             traversable_results = []
 
-        if len(textLabels) > 0:
-            _, text_results_idx, text_sim = self.prompt(results, texts=textLabels)
+        if len(text_labels) > 0:
+            _, text_results_idx, text_sim = self.prompt(results, texts=text_labels)
             results = results[~text_results_idx[0]]
 
         mask_data = results.masks.data
@@ -79,9 +76,9 @@ class FastSamClass:
         mask_sums = torch.sum(mask_data, dim=(1, 2), dtype=torch.int32)
 
         # some masks are all zeros
-        validMasksIdx = torch.argwhere(mask_sums != 0).squeeze(dim=1)
-        mask_sums = mask_sums[validMasksIdx]
-        mask_data = mask_data[validMasksIdx]
+        valid_masks_index = torch.argwhere(mask_sums != 0).squeeze(dim=1)
+        mask_sums = mask_sums[valid_masks_index]
+        mask_data = mask_data[valid_masks_index]
 
         ordered_sums = torch.argsort(mask_sums, descending=True).to(torch.int32)
 
@@ -101,7 +98,7 @@ class FastSamClass:
         masks = interpolated_tensor[:-1, ...].to(torch.bool).cpu().numpy()
         mask_sums = mask_sums[ordered_sums].cpu().numpy()
 
-        if retMaskAsDict:
+        if return_mask_as_dict:
             return [{'segmentation': masks[i], 'area': mask_sums[i]} for i in
                     range(masks.shape[0])], None, traversable_mask
 
@@ -256,16 +253,16 @@ class FastSamClass:
     def visualize(self, image: np.array, masks: np.array):
         if type(masks[0]) == dict:
             masks = [m['segmentation'] for m in masks]
-        colors, _ = utils_viz.value2color(np.arange(len(masks)), cmName='viridis')
+        colors, _ = src.plotting.utils_visualize.value_to_colour(np.arange(len(masks)), cmName='viridis')
         img = cv2.resize(image, (self.image_width, self.image_height))
-        viz = utils_viz.drawMasksWithColors(img, masks, colors)
+        viz = src.plotting.utils_visualize.draw_masks_with_colours(img, masks, colors)
         plt.imshow(viz)
         plt.axis('off')
         plt.show()
 
 
 # Example usage:
-# python -m libs.segmentor.fast_sam_module /path/to/image
+# python -m src.segmentor.fast_sam_module /path/to/image
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         imgName = sys.argv[1]
@@ -287,7 +284,7 @@ if __name__ == "__main__":
     plt.show()
 
     # wrapper test
-    masks = fastsam.segment(img, retMaskAsDict=False, textLabels=['ceiling', 'floor'])[0]
+    masks = fastsam.segment(img, return_mask_as_dict=False, text_labels=['ceiling', 'floor'])[0]
     print(f"Found {len(masks)} masks")
 
     fastsam.visualize(img, masks)

@@ -1,17 +1,12 @@
-from numpy import pi
-from typing import Optional
-
-
 class PID:
 
-    def __init__(self, Kp: float, Ki: float, Kd: float, robot_radius: Optional[float] = None):
+    def __init__(self, Kp: float, Ki: float, Kd: float):
         self.Kp = Kp
         self.Ki = Ki
         self.Kd = Kd
         self.bias = 0
         self.error_prior = 0
         self.integral_prior = 0
-        self.robot_radius = robot_radius
 
     def _pid(self, value_goal: float, value_actual: float, time_delta) -> float:
         error = value_goal - value_actual

@@ -7,8 +7,61 @@ import datetime
 import os
 import quaternion
 import cv2
-
 import habitat_sim
+
+
+def dict_to_args(cfg_dict):
+    args = type('', (), {})()
+    for k, v in cfg_dict.items():
+        setattr(args, k, v)
+    return args
+
+
+def get_default_args():
+    args_dict = {
+        'method': 'tango',
+        'goal_source': 'gt_metric',
+        'graph_filename': None,
+        'max_start_distance': 'easy',
+        'threshold_goal_distance': 0.5,
+        'debug': False,
+        'max_steps': 500,
+        'run_list': '',
+        'path_run': '',
+        'path_models': None,
+        'log_robot': True,
+        'save_vis': False,
+        'plot': False,
+        'infer_depth': False,
+        'infer_traversable': False,
+        'segmentor': 'fast_sam',
+        'task_type': 'original',
+        'use_gt_localization': False,
+        'env': 'sim',
+        'goal_gen': {
+            'text_labels': [],
+            'matcher_name': 'lightglue',
+            'map_matcher_name': 'lightglue',
+            'geometric_verification': True,
+            'match_area': False,
+            'goalNodeIdx': None,
+            'edge_weight_str': None,
+            'use_goal_nbrs': False,
+            'plan_da_nbrs': False,
+            'rewrite_graph_with_allPathLengths': False,
+            'loc_radius': 4,
+            'do_track': False,
+            'subsample_ref': 1,
+        },
+        'sim': {
+            'width': 320,
+            'height': 240,
+            'hfov': 120,
+            'sensor_height': 0.4
+        },
+    }
+    # args_dict as attributes of args
+    return dict_to_args(args_dict)
 
 
 def get_sim_settings(scene, default_agent=0, sensor_height=1.5, width=256, height=256, hfov=90):
@@ -47,7 +100,8 @@ def make_simple_cfg(settings):
     # hardware_config.height = 20  # Setting the height to 1.6 meters
     # hardware_config.radius = 10  # Setting the radius to 0.2 meters
     # discrete actions defined for objectnav task in habitat-lab/habitat/config/habitat/task/objectnav.yaml
-    custom_action_dict = {'stop': habitat_sim.ActionSpec(name='move_forward', actuation=habitat_sim.ActuationSpec(amount=0))}
+    custom_action_dict = {
+        'stop': habitat_sim.ActionSpec(name='move_forward', actuation=habitat_sim.ActuationSpec(amount=0))}
     for k in hardware_config.action_space.keys():
         custom_action_dict[k] = hardware_config.action_space[k]
     custom_action_dict['look_up'] = habitat_sim.ActionSpec(name='look_up',
@@ -85,8 +139,10 @@ def make_simple_cfg(settings):
     return habitat_sim.Configuration(sim_cfg, [hardware_config])
 
 
-def get_sim_agent(test_scene, updateNavMesh=False, agent_radius=0.75, width=320, height=240, hfov=90, sensor_height=1.5):
-    sim_settings = get_sim_settings(scene=test_scene, width=width, height=height,  hfov=hfov, sensor_height=sensor_height)
+def get_sim_agent(test_scene, updateNavMesh=False, agent_radius=0.75, width=320, height=240, hfov=90,
+                  sensor_height=1.5):
+    sim_settings = get_sim_settings(scene=test_scene, width=width, height=height, hfov=hfov,
+                                    sensor_height=sensor_height)
     cfg = make_simple_cfg(sim_settings)
     sim = habitat_sim.Simulator(cfg)
 
@@ -131,7 +187,7 @@ def getK_fromAgent(agent):
     return getK_fromParams(specs.hfov, specs.resolution[1], specs.resolution[0])
 
 
-def value2color(values, vmin=None, vmax=None, cmName='jet'):
+def value_to_colour(values, vmin=None, vmax=None, cmName='jet'):
     cmapPaths = matplotlib.colormaps.get_cmap(cmName)
     if vmin is None:
         vmin = min(values)
@@ -165,7 +221,7 @@ def visualize_flow(cords_org, cords_dst, img=None, colors=None, norm=None, weigh
         ax.quiver(*(np.array([160, 120]).T), weightedSum[0], weightedSum[1], color='black', edgecolor='white',
                   linewidth=0.5)
     ax.quiver(*(cords_org.T), diff[:, 0], diff[:, 1], color=colors, edgecolor='white', linewidth=0.5)
-    if colorbar: add_colobar(ax, plt, norm, cmap)
+    if colorbar: add_colourbar(ax, plt, norm, cmap)
     ax.set_xlim([0, img_width])
     ax.set_ylim([img_height, 0])
     ax.set_axis_off()
@@ -183,7 +239,7 @@ def visualize_flow(cords_org, cords_dst, img=None, colors=None, norm=None, weigh
         return vis
 
 
-def add_colobar(ax, plt, norm=None, cmap='jet'):
+def add_colourbar(ax, plt, norm=None, cmap='jet'):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     # Create a ScalarMappable object with the "autumn" colormap
@@ -363,6 +419,7 @@ def findAnnotationPath(scenePath):
     else:
         return f"{pathTillSplit}/{split}/hm3d_annotated_{split}_basis.scene_dataset_config.json"
 
+
 def print_regions(regions, max_regions=10, max_objects=10):
     region_count = 0
     for region in regions:
@@ -384,6 +441,7 @@ def print_regions(regions, max_regions=10, max_objects=10):
         if region_count >= max_regions:
             break
 
+
 def print_scene_recur(scene, limit_output=10):
     print(f"House has {len(scene.levels)} levels, {len(scene.regions)} regions and {len(scene.objects)} objects")
     print(f"House center:{scene.aabb.center} dims:{scene.aabb.sizes}")
@@ -394,7 +452,7 @@ def print_scene_recur(scene, limit_output=10):
             f" dims:{level.aabb.sizes}"
         )
         print_regions(level.regions, limit_output, limit_output)
-    
+
     if len(scene.levels) == 0:
         print_regions(scene.regions, limit_output, limit_output)
 
@@ -403,8 +461,10 @@ def print_scene_recur(scene, limit_output=10):
     # scene = sim.semantic_scene
     # print_scene_recur(scene)
 
+
 def obj_id_to_int(obj):
     return int(obj.id.split("_")[-1])
+
 
 def get_instance_to_category_mapping(semanticScene):
     instance_id_to_label_id = np.array(
@@ -416,12 +476,15 @@ def get_instance_index_to_name_mapping(semanticScene):
     instance_index_to_name = np.array([[i, obj.category.name()] for i, obj in enumerate(semanticScene.objects)])
     return instance_index_to_name
 
+
 def get_instance_id_to_region_id_mapping(semantic_scene):
-    instance_index_to_region_id = np.array([[obj_id_to_int(obj), int(obj.region.id[1:])] for obj in semantic_scene.objects])
+    instance_index_to_region_id = np.array(
+        [[obj_id_to_int(obj), int(obj.region.id[1:])] for obj in semantic_scene.objects])
 
     # check if object ids iterate exactly over total objects
-    assert(instance_index_to_region_id[-1, 0] == len(semantic_scene.objects) - 1)
+    assert (instance_index_to_region_id[-1, 0] == len(semantic_scene.objects) - 1)
     return instance_index_to_region_id
+
 
 def get_region_id_to_instance_id_dict(semantic_scene):
     region_id_to_instance_id = {}
@@ -432,6 +495,7 @@ def get_region_id_to_instance_id_dict(semantic_scene):
             instance_id = int(instance.id.split("_")[-1])
             region_id_to_instance_id[region_key].append(instance_id)
     return region_id_to_instance_id
+
 
 def get_instance_id_to_all_dict(semantic_scene, save_explicit_dict=False):
     instance_id_to_all = {}
@@ -452,8 +516,8 @@ def get_instance_id_to_all_dict(semantic_scene, save_explicit_dict=False):
         instance_id_to_all[instance_id] = instance
     return instance_id_to_all
 
-def sample_goal_instances_across_regions(semantic_scene, seed=None):
 
+def sample_goal_instances_across_regions(semantic_scene, seed=None):
     if seed is not None:
         np.random.seed(seed)
 
@@ -472,19 +536,20 @@ def sample_goal_instances_across_regions(semantic_scene, seed=None):
         goal_instance_ids.append(obj_id_to_int(instance))
         goal_instance_coords.append(instance_coords)
 
-        print(f"Region: {region.id}, Instance: {goal_instance_ids[-1]}, Category: {instance.category.name()}, coords: {instance_coords}, region center: {region.aabb.center}")
+        print(
+            f"Region: {region.id}, Instance: {goal_instance_ids[-1]}, Category: {instance.category.name()}, coords: {instance_coords}, region center: {region.aabb.center}")
 
     return goal_instance_ids, goal_instance_coords
 
-def sample_goal_instances_across_regions_indirect(semantic_scene, num_goals=2, repeat_regions=False):
 
+def sample_goal_instances_across_regions_indirect(semantic_scene, num_goals=2, repeat_regions=False):
     cat_to_avoid = ['Unknown', 'wall', 'ceiling', 'floor']
     reg_to_insta_dict = get_region_id_to_instance_id_dict(semantic_scene)
     insta_to_cat_map = get_instance_index_to_name_mapping(semantic_scene)
     insta_to_all_dict = get_instance_id_to_all_dict(semantic_scene)
 
     # sample regions
-    num_extra_samples = 5 # to avoid regions with no filtered instances
+    num_extra_samples = 5  # to avoid regions with no filtered instances
     reg_ids = list(reg_to_insta_dict.keys())
     num_regions_to_sample = min(num_goals + num_extra_samples, len(reg_ids))
     reg_ids = np.random.choice(reg_ids, num_regions_to_sample, replace=repeat_regions)
@@ -506,7 +571,8 @@ def sample_goal_instances_across_regions_indirect(semantic_scene, num_goals=2, r
         goal_instance_ids.append(insta_id)
         goal_instance_coords.append(insta_coords)
 
-        print(f"Region: {reg_id}, Instance: {insta_id}, Category: {insta_to_cat_map[insta_id][1]}, coords: {insta_coords}, region center: {semantic_scene.regions[reg_id].aabb.center}")
+        print(
+            f"Region: {reg_id}, Instance: {insta_id}, Category: {insta_to_cat_map[insta_id][1]}, coords: {insta_coords}, region center: {semantic_scene.regions[reg_id].aabb.center}")
 
     return goal_instance_ids, goal_instance_coords
 

@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="torch.masked.mas
 # python 3.9
 warnings.filterwarnings("ignore", category=UserWarning, module="torch.masked.maskedtensor.core")
 
-from libs.commons import utils
+from src.common import utils_map_graph
 
 def change_edge_attr(G):
     for e in G.edges(data=True):

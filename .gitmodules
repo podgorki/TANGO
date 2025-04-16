@@ -1,21 +1,3 @@
-[submodule "auto_agents/SegmentMap"]
-	path = auto_agents/SegmentMap
-	url = https://github.com/oravus/SegmentMap.git
-[submodule "libs/depth/Depth-Anything"]
-	path = libs/depth/Depth-Anything
-	url = git@github.com:LiheYoung/Depth-Anything.git
-[submodule "libs/depth/depth_anything"]
-	path = libs/depth/depth_anything
-	url = git@github.com:LiheYoung/Depth-Anything.git
-[submodule "libs/control/visualnav-transformer"]
-	path = libs/control/visualnav-transformer
-	url = git@github.com:oravus/visualnav-transformer.git
-[submodule "libs/control/visualnav_transformer"]
-	path = libs/control/visualnav_transformer
-	url = git@github.com:oravus/visualnav-transformer.git
-[submodule "libs/segmentor/sam2"]
-	path = libs/segmentor/sam2
-	url = https://github.com/facebookresearch/sam2.git
-[submodule "libs/matcher/AnyLoc"]
-	path = libs/matcher/AnyLoc
-	url = https://github.com/AnyLoc/AnyLoc.git
+[submodule "third_party/depth-anything"]
+	path = third_party/depth-anything
+	url = git@github.com:LiheYoung/Depth-Anything.git\

@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Optional
-from libs.path_finding.graphs import PriorityQueue, CostMapGrid
+from src.tango.path_finding.graphs import PriorityQueue, CostMapGrid
 
 
 class Search:

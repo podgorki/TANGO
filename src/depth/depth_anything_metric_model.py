@@ -1,11 +1,10 @@
-import cv2
 import torch
 import torch.nn as nn
 import numpy as np
 import kornia as K
 from pathlib import Path
-from libs.depth.depth_anything.metric_depth.zoedepth.utils.config import get_config
-from libs.depth.depth_anything.metric_depth.zoedepth.models.builder import build_model
+from third_party.depth_anything.metric_depth.zoedepth.utils.config import get_config
+from third_party.depth_anything.metric_depth.zoedepth.models.builder import build_model
 
 
 class DepthAnythingMetricModel(nn.Module):
