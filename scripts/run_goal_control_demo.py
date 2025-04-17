@@ -78,7 +78,7 @@ def run(args):
                     episode_runner.traversable_class_indices
                 ).numpy()
 
-            episode_runner.get_control_signal(step, display_img, depth)
+            episode_runner.get_control_signal(depth)
             episode_runner.execute_action()
 
             if args.plot:
