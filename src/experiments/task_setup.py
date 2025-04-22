@@ -179,11 +179,14 @@ class Episode:
         if self.args.save_vis:
             matplotlib.use('Agg')  # Use the Agg backend to suppress plots
             self.set_logging()
+        else:
+            matplotlib.use('TkAgg')
 
         import matplotlib.style as mplstyle
         mplstyle.use('fast')
         mplstyle.use(['dark_background', 'ggplot', 'fast'])
         fig, ax = setup_sim_plots()
+        fig.patch.set_facecolor('black')
         return ax, plt
 
     def ready_agent(self) -> None:

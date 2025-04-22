@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup_sim_plots():
-    fig, ax = plt.subplots(2, 4, figsize=(12, 7))
-    plt.ion()
+    fig, ax = plt.subplots(2, 4, figsize=(12, 7), constrained_layout=True)
     return fig, ax
 
 

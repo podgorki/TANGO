@@ -108,7 +108,9 @@ def plot_sensors(
         ax[0, 3].set_xticks([])
         ax[0, 3].set_yticks([])
         ax[0, 3].set_title('Goal Mask')
-    goal_cmap = matplotlib.colors.ListedColormap([matplotlib.cm.get_cmap('Greys')(0.0), matplotlib.cm.get_cmap('viridis')(1.0)])
+    goal_cmap = matplotlib.colors.ListedColormap(
+        [matplotlib.cm.get_cmap('Greys')(0.0), matplotlib.cm.get_cmap('viridis')(1.0)]
+    )
     ax[1, 3].cla()
     ax[1, 3].imshow(display_img, extent=extent)
     ax[1, 3].imshow(goal, alpha=0.5, extent=extent, cmap=goal_cmap)
