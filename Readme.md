@@ -1,6 +1,8 @@
 # TANGO: Traversability-Aware Navigation with Local Metric Control for Topological Goals, ICRA 2025
 
-[//]: # (<img width="806" alt="image" src="./assets/pixelnav.png">)
+<img width="1200" alt="image" src="./data/tango_pipeline.JPG">
+
+<img width="1200" alt="image" src="./data/tango_teaser.png">
 
 This is the official implementation of the paper. Please refer to the [paper](...) and 
 [website](https://podgorki.github.io/TANGO/) for more technique details.
@@ -9,6 +11,98 @@ This repository contains the TANGO controller and a minimal setup required to sh
 
 This work is based off a larger project beginning with RoboHop and the full evaluation for this code and Robohop can be 
 found at [website](...) 
+
+## Results
+<div align="center">
+  <div style="max-width: 800px;">
+    <table align="center" width="80%">
+      <caption>
+        Navigation success rate across varying trajectory lengths.
+      </caption>
+      <thead>
+        <tr>
+          <th>Controller</th>
+          <th>Easy [1–3m]</th>
+          <th>Hard [3–5m]</th>
+          <th>Full [8–10m]</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- GT‑Metric block -->
+        <tr>
+          <td colspan="4" align="center"><strong>GT‑Metric</strong></td>
+        </tr>
+        <tr>
+          <td>RoboHop[1]</td>
+          <td align="right">93.14</td>
+          <td align="right">78.43</td>
+          <td align="right">42.16</td>
+        </tr>
+        <tr>
+          <td>PixNav[2]</td>
+          <td align="right">65.69</td>
+          <td align="right">44.12</td>
+          <td align="right">15.69</td>
+        </tr>
+        <tr>
+          <td><strong>Ours (TANGO)</strong></td>
+          <td align="right"><strong>94.12</strong></td>
+          <td align="right"><strong>90.20</strong></td>
+          <td align="right"><strong>48.04</strong></td>
+        </tr>
+        <!-- GT‑Topological block -->
+        <tr>
+          <td colspan="4" align="center"><strong>GT‑Topological</strong></td>
+        </tr>
+        <tr>
+          <td>RoboHop[1]</td>
+          <td align="right">78.43</td>
+          <td align="right">58.82</td>
+          <td align="right">25.49</td>
+        </tr>
+        <tr>
+          <td>PixNav[2]</td>
+          <td align="right">60.78</td>
+          <td align="right">44.12</td>
+          <td align="right">15.69</td>
+        </tr>
+        <tr>
+          <td><strong>Ours (TANGO)</strong></td>
+          <td align="right">74.51</td>
+          <td align="right"><strong>65.69</strong></td>
+          <td align="right"><strong>30.39</strong></td>
+        </tr>
+        <!-- No‑GT block -->
+        <tr>
+          <td colspan="4" align="center"><strong>No‑GT</strong></td>
+        </tr>
+        <tr>
+          <td>RoboHop[1]</td>
+          <td align="right">43.56</td>
+          <td align="right">34.56</td>
+          <td align="right">13.73</td>
+        </tr>
+        <tr>
+          <td>PixNav[2]</td>
+          <td align="right">51.96</td>
+          <td align="right">39.22</td>
+          <td align="right">14.00</td>
+        </tr>
+        <tr>
+          <td><strong>Ours (TANGO)</strong></td>
+          <td align="right"><strong>61.76</strong></td>
+          <td align="right"><strong>43.14</strong></td>
+          <td align="right"><strong>21.57</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+[1] RoboHop-Garg S. et al., Robohop: Segment-based topological map representation for open-world visual navigation ICRA 2024.
+
+[2] PixNav-Cai et al., Bridging zero-shot object navigation and foundation models through pixel-guided navigation skill, CVPR 2024
+
 
 ## Installation 
 ### Create new environment
