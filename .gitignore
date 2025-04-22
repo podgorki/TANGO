@@ -1,7 +1,3 @@
-configs/tango.yaml
-third_party/models/*
-
-
 # Byte‑compiled / optimized / DLL files
 __pycache__/            # Python bytecode cache :contentReference[oaicite:0]{index=0}
 *.py[cod]               # .pyc, .pyo, .pyd :contentReference[oaicite:1]{index=1}
@@ -52,22 +48,7 @@ coverage.xml            # coverage report :contentReference[oaicite:30]{index=30
 
 # IDE / Editor directories and files
 # PyCharm / JetBrains IDEs :contentReference[oaicite:33]{index=33}
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-.idea/**/aws.xml
-.idea/**/contentModel.xml
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
-.idea/**/gradle.xml
-.idea/**/libraries
+.idea/*
 *.iml                   # module files :contentReference[oaicite:34]{index=34}
 
 # Other IDEs/editors
@@ -80,3 +61,10 @@ coverage.xml            # coverage report :contentReference[oaicite:30]{index=30
 Thumbs.db               # Windows :contentReference[oaicite:38]{index=38}
 ehthumbs.db             # Windows :contentReference[oaicite:39]{index=39}
 Icon?                   # macOS custom icon :contentReference[oaicite:40]{index=40}
+
+configs/tango.yaml
+third_party/models/*
+third_party/habitat-sim/*
+.venv/*
+/third_party/habitat-sim/3.14.0
+/src/tango.egg-info/*
