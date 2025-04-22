@@ -8,7 +8,6 @@ import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="contextlib")
 
-
 def get_depth_model():
     from src.depth.depth_anything_metric_model import DepthAnythingMetricModel
 
@@ -17,6 +16,7 @@ def get_depth_model():
         path_zoe_depth = Path(p)  # p is a pathlib.Path object
     if not path_zoe_depth.exists():
         raise FileNotFoundError(f'{path_zoe_depth} not found...')
+
     depth_model = DepthAnythingMetricModel(
         depth_model_name, pretrained_resource=str(path_zoe_depth)
     )

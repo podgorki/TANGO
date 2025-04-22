@@ -17,6 +17,23 @@ torch.backends.cudnn.benchmark = True
 
 
 def run(args):
+    if args.infer_depth:
+        # workaround for hardcoded paths in depth anything
+        import torch.hub as _hub
+        # Absolute path to the bundled facebookresearch_dinov2_main
+        ROOT = Path(__file__).resolve().parents[1]  # …/TANGO
+        REAL_REPO = ROOT / "third_party" / "depth_anything" / "torchhub" / "facebookresearch_dinov2_main"
+
+        # Wrap the private _load_local so '../torchhub/…' in depth anything is rewritten to the real path
+        _orig_load = _hub._load_local
+
+        def _patched_load_local(repo_or_dir, model, *args, **kwargs):
+            if repo_or_dir.startswith(".." + os.sep + "torchhub"):
+                repo_or_dir = str(REAL_REPO)
+            return _orig_load(repo_or_dir, model, *args, **kwargs)
+
+        _hub._load_local = _patched_load_local
+
     # set up all the paths
     path_dataset = Path(args.path_dataset)
     path_scenes_root_hm3d = path_dataset / 'hm3d_v0.2' / args.split
@@ -77,10 +94,11 @@ def run(args):
                     episode_runner.plot(ax, plt, step, display_img, depth, semantic_instance_sim)
 
 
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("--config_file", "-c",
-                        help="Path to the config file", default="../configs/tango.yaml")
+                        help="Path to the config file", default="configs/tango.yaml")
     return parser.parse_args()
 
 
