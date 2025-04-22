@@ -1,3 +1,3 @@
-[submodule "third_party/depth-anything"]
-	path = third_party/depth-anything
-	url = git@github.com:LiheYoung/Depth-Anything.git\
+[submodule "third_party/depth_anything"]
+	path = third_party/depth_anything
+	url = https://github.com/LiheYoung/Depth-Anything.git
