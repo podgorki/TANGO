@@ -64,7 +64,7 @@ def run(args):
 
     preload_data = task_setup.preload_models(args)
 
-    episodes = task_setup.load_run_list(args, path_episode_root)[args.start_index:args.end_index:args.steps_index]
+    episodes = task_setup.load_run_list(path_episode_root)[args.start_index:args.end_index:args.steps_index]
 
     for ei, path_episode in tqdm(
             enumerate(episodes), total=len(episodes), desc=f'Processing Episodes (Total: {len(episodes)})'

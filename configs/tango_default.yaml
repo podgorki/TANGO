@@ -1,0 +1,47 @@
+# required paths
+path_dataset: 'path/to/dataset'
+path_models: 'third_party/models/'
+path_results: 'path/to/results_save'
+
+# start and stop indexes for runs
+start_index: 0
+end_index: 200
+steps_index: 1
+# running from list of winners or failure or no good
+
+# simulator params
+split: 'val'  # train, val
+max_steps: 500
+threshold_goal_distance: 1.0  # in meters
+max_start_distance: 'full'  # ['easy', 'hard', 'full']
+sim:
+  hfov: 120
+  width: 320
+  height: 240
+  sensor_height: 0.4 # [0.4, 1.31, 1.5]
+  traversable_class_names: [
+    'floor',
+    'floor mat',
+    'floor vent',
+    'carpet',
+    'rug',
+    'doormat',
+    'shower floor',
+    'pavement',
+    'ground',
+    'ceiling',
+    'ceiling lower',
+  ]
+goal_gen:
+  text_labels: [] # labels to drop from traversable list
+
+# controller and mapping params
+method: 'tango'
+segmentor: 'sim' # [sim, fastsam]
+goal_source: 'gt_metric'  # [gt_metric, gt_topological, topological]
+infer_depth: 0
+infer_traversable: 0
+
+# tango's visualization panel
+plot: 1
+save_vis: False

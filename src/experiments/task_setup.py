@@ -112,7 +112,6 @@ class Episode:
         vel_control.ang_vel_is_local = True
         self.vel_control = vel_control
 
-        # self.traversable_class_indices = np.array([])
         self.traversable_class_indices, self.bad_goal_classes, self.cull_instance_ids = get_semantic_filters(
             self.sim, self.args.sim["traversable_class_names"]
         )
@@ -120,8 +119,6 @@ class Episode:
     def set_segmentor(self) -> Optional[FastSamClass]:
         if self.args.infer_traversable:
             segmentor = self.preload_data['segmentor']
-            cfg_goalie = self.args.goal_gen
-            cfg_goalie.update({"use_gt_localization": self.args.use_gt_localization})
         else:
             segmentor = None
         return segmentor
@@ -233,9 +230,6 @@ class Episode:
         )
         self.semantic_control_input = semantic_instance
         if self.args.infer_traversable:
-            remove_mask = None
-            # instance_ids_to_remove = np.concatenate([bad_goal_classes, traversable_class_indices])
-            # remove_mask = (semantic_instance_sim[:, :, None] == instance_ids_to_remove[None, None, :]).sum(-1).astype(bool)
             seg_results = self.traversability_segmentor.segment(
                 rgb[:, :, :3],
                 text_labels=self.args.goal_gen['text_labels']
@@ -391,24 +385,8 @@ class Episode:
             self.sim.close()
 
 
-def load_run_list(args, path_episode_root) -> list:
-    if args.run_list == '':
-        path_episodes = sorted(path_episode_root.glob('*'))
-    else:
-        path_episodes = []
-        if args.path_run == '':
-            raise ValueError('Run path must be specified when using run list!')
-        if args.run_list.lower() in ['winners', 'failures', 'no_good', 'custom']:
-            if args.run_list.lower() not in ['no_good', 'custom']:
-                logger.info(
-                    f'Setting logging to False when running winner or failure list! - arg.log_robot:{args.log_robot}')
-                args.log_robot = False
-            with open(str(Path(args.path_run) / 'summary' / f'{args.run_list.lower()}.csv'), 'r') as f:
-                for line in f.readlines():
-                    path_episodes.append(
-                        path_episode_root / line[:line.rfind(f'_{args.method}')].strip('\n'))
-        else:
-            raise ValueError(f'{args.run_list} is not a valid option.')
+def load_run_list(path_episode_root) -> list:
+    path_episodes = sorted(path_episode_root.glob('*'))
     return path_episodes
 
 
@@ -418,8 +396,7 @@ def init_results_dir_and_save_cfg(args, default_logger=None):
                            f'{datetime.now().strftime("%Y%m%d-%H-%M-%S")}_{args.method.lower()}_gt_metric')
     path_results_folder.mkdir(exist_ok=True, parents=True)
     if default_logger is not None:
-        default_logger.update_file_handler_root(
-            path_results_folder / 'output.log')
+        default_logger.update_file_handler_root(path_results_folder / 'output.log')
     print(f'Logging to: {str(path_results_folder)}')
     return path_results_folder
 
@@ -428,7 +405,7 @@ def preload_models(args):
     segmentor = None
     if args.infer_traversable:
         # use predefined traversable classes with fast_sam predictions only if it is tango (tango) and infer_traversable is True
-        traversable_class_names = args.traversable_class_names if (
+        traversable_class_names = args.sim['traversable_class_names'] if (
                 args.infer_traversable and args.method.lower() == 'tango'
         ) else None
 
@@ -459,7 +436,6 @@ def closest_state(sim, agent_states, distance_threshold: float, final_position=N
 
 
 def select_starting_state(sim, args, agent_states, final_position=None):
-    # reverse traverse episodes end 1m before the original start, offset that
     distance_threshold_offset = 0
     if args.max_start_distance.lower() == 'easy':
         start_index = closest_state(
@@ -468,7 +444,7 @@ def select_starting_state(sim, args, agent_states, final_position=None):
         start_index = closest_state(
             sim, agent_states, 5 + distance_threshold_offset, final_position)
     elif args.max_start_distance.lower() == 'full':
-        start_index = 0 if not args.reverse else len(agent_states) - 1
+        start_index = 0
     else:
         raise NotImplementedError(
             f'max start distance: {args.max_start_distance} is not an available start.')

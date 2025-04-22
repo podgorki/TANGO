@@ -31,8 +31,8 @@ from PIL import Image
 
 class FastSamClass:
     def __init__(self, config_settings: dict, device: str = 'cuda', traversable_categories: list = None):
-        root_dir = Path(__file__).resolve().parents[1]
-        model_dir = root_dir / 'models'
+        root_dir = Path(__file__).resolve().parents[2]
+        model_dir = root_dir / 'third_party' / 'models'
         self.device = device
         self.image_width = config_settings["width"]
         self.image_height = config_settings["height"]
