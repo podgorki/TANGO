@@ -178,6 +178,7 @@ class Episode:
         import matplotlib.pyplot as plt
         if self.args.save_vis:
             matplotlib.use('Agg')  # Use the Agg backend to suppress plots
+            self.set_logging()
 
         import matplotlib.style as mplstyle
         mplstyle.use('fast')
