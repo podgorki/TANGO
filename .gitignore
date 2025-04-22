@@ -1,0 +1,82 @@
+configs/tango.yaml
+third_party/models/*
+
+
+# Byte‑compiled / optimized / DLL files
+__pycache__/            # Python bytecode cache :contentReference[oaicite:0]{index=0}
+*.py[cod]               # .pyc, .pyo, .pyd :contentReference[oaicite:1]{index=1}
+*$py.class              # Jython bytecode :contentReference[oaicite:2]{index=2}
+
+# C extensions
+*.so                    # compiled C extensions :contentReference[oaicite:3]{index=3}
+
+# Distribution / packaging
+.Python                 # installed Python marker :contentReference[oaicite:4]{index=4}
+build/                  # build/ directory :contentReference[oaicite:5]{index=5}
+develop-eggs/           # develop‑eggs :contentReference[oaicite:6]{index=6}
+dist/                   # distribution packages :contentReference[oaicite:7]{index=7}
+downloads/              # downloads :contentReference[oaicite:8]{index=8}
+eggs/                   # eggs :contentReference[oaicite:9]{index=9}
+.eggs/                  # eggs :contentReference[oaicite:10]{index=10}
+lib/                    # Python lib :contentReference[oaicite:11]{index=11}
+lib64/                  # 64‑bit Python lib :contentReference[oaicite:12]{index=12}
+parts/                  # parts :contentReference[oaicite:13]{index=13}
+sdist/                  # source dist :contentReference[oaicite:14]{index=14}
+var/                    # var :contentReference[oaicite:15]{index=15}
+*.egg-info/             # metadata directories :contentReference[oaicite:16]{index=16}
+.installed.cfg          # installed config :contentReference[oaicite:17]{index=17}
+*.egg                   # egg files :contentReference[oaicite:18]{index=18}
+pip-wheel-metadata/     # pip metadata :contentReference[oaicite:19]{index=19}
+
+# Virtual environments
+env/                    # env folder :contentReference[oaicite:20]{index=20}
+venv/                   # venv folder :contentReference[oaicite:21]{index=21}
+ENV/                    # ENV folder :contentReference[oaicite:22]{index=22}
+.venv/                  # common virtualenv :contentReference[oaicite:23]{index=23}
+env.bak/                # backup env :contentReference[oaicite:24]{index=24}
+venv.bak/               # backup venv :contentReference[oaicite:25]{index=25}
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+*.manifest
+*.spec
+
+# Coverage and testing
+.coverage               # coverage data :contentReference[oaicite:26]{index=26}
+.cache/                 # pytest cache/mypy cache :contentReference[oaicite:27]{index=27}
+.pytest_cache/          # pytest cache :contentReference[oaicite:28]{index=28}
+nosetests.xml           # nose report :contentReference[oaicite:29]{index=29}
+coverage.xml            # coverage report :contentReference[oaicite:30]{index=30}
+*.cover                 # coverage files :contentReference[oaicite:31]{index=31}
+*.log                   # logs :contentReference[oaicite:32]{index=32}
+
+# IDE / Editor directories and files
+# PyCharm / JetBrains IDEs :contentReference[oaicite:33]{index=33}
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/aws.xml
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+*.iml                   # module files :contentReference[oaicite:34]{index=34}
+
+# Other IDEs/editors
+.vscode/                # VS Code :contentReference[oaicite:35]{index=35}
+*.sublime-project       # Sublime :contentReference[oaicite:36]{index=36}
+*.sublime-workspace
+
+# Operating system files
+.DS_Store               # macOS :contentReference[oaicite:37]{index=37}
+Thumbs.db               # Windows :contentReference[oaicite:38]{index=38}
+ehthumbs.db             # Windows :contentReference[oaicite:39]{index=39}
+Icon?                   # macOS custom icon :contentReference[oaicite:40]{index=40}
