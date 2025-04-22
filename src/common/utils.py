@@ -101,13 +101,18 @@ def make_simple_cfg(settings):
     # hardware_config.radius = 10  # Setting the radius to 0.2 meters
     # discrete actions defined for objectnav task in habitat-lab/habitat/config/habitat/task/objectnav.yaml
     custom_action_dict = {
-        'stop': habitat_sim.ActionSpec(name='move_forward', actuation=habitat_sim.ActuationSpec(amount=0))}
+        'stop': habitat_sim.ActionSpec(name='move_forward', actuation=habitat_sim.ActuationSpec(amount=0))
+    }
     for k in hardware_config.action_space.keys():
         custom_action_dict[k] = hardware_config.action_space[k]
-    custom_action_dict['look_up'] = habitat_sim.ActionSpec(name='look_up',
-                                                           actuation=habitat_sim.ActuationSpec(amount=30))
-    custom_action_dict['look_down'] = habitat_sim.ActionSpec(name='look_down',
-                                                             actuation=habitat_sim.ActuationSpec(amount=30))
+    custom_action_dict['look_up'] = habitat_sim.ActionSpec(
+        name='look_up',
+        actuation=habitat_sim.ActuationSpec(amount=30)
+    )
+    custom_action_dict['look_down'] = habitat_sim.ActionSpec(
+        name='look_down',
+        actuation=habitat_sim.ActuationSpec(amount=30)
+    )
 
     hardware_config.action_space = custom_action_dict
     # In the 1st example, we attach only one sensor,
@@ -139,8 +144,15 @@ def make_simple_cfg(settings):
     return habitat_sim.Configuration(sim_cfg, [hardware_config])
 
 
-def get_sim_agent(test_scene, updateNavMesh=False, agent_radius=0.75, width=320, height=240, hfov=90,
-                  sensor_height=1.5):
+def get_sim_agent(
+        test_scene,
+        updateNavMesh=False,
+        agent_radius=0.75,
+        width=320,
+        height=240,
+        hfov=90,
+        sensor_height=1.5
+):
     sim_settings = get_sim_settings(scene=test_scene, width=width, height=height, hfov=hfov,
                                     sensor_height=sensor_height)
     cfg = make_simple_cfg(sim_settings)
@@ -206,9 +218,6 @@ def visualize_flow(cords_org, cords_dst, img=None, colors=None, norm=None, weigh
     fig_width, fig_height = img_width / dpi, img_height / dpi
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
     if img is not None: ax.imshow(img)
-    # for i in range(len(currImg_mask_coords)):
-    #     ax.plot(currImg_mask_coords[i,0],currImg_mask_coords[i,1],'o',color='r')
-    #     ax.plot(refNodes_mask_coords[matchInds[i],0],refNodes_mask_coords[matchInds[i],1],'o',color='b')
     if fwdVals is not None:
         # plot a diamond for negative values and a circle for positive values, size = val
         pointTypeMask = fwdVals > 0

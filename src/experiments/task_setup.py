@@ -46,14 +46,9 @@ class Episode:
         if preload_data is not None:
             self.preload_data = preload_data
 
-        if args.env == 'sim':
-            if not (self.path_episode / 'agent_states.npy').exists():
-                raise FileNotFoundError(
-                    f'{self.path_episode / "agent_states.npy"} does not exist...')
-        else:
-            self.agent_states = None
-            self.final_goal_position = None
-            self.traversable_class_indices = None
+        if not (self.path_episode / 'agent_states.npy').exists():
+            raise FileNotFoundError(
+                f'{self.path_episode / "agent_states.npy"} does not exist...')
 
         # data params
         is_robohop_tango = np.isin(['robohop', 'tango'], self.args.method.lower()).any()
@@ -430,8 +425,7 @@ def load_run_list(args, path_episode_root) -> list:
 
 def init_results_dir_and_save_cfg(args, default_logger=None):
     path_results = Path(args.path_results)
-    task_str = args.task_type
-    path_results_folder = (path_results / task_str / args.exp_name / args.split / args.max_start_distance /
+    path_results_folder = (path_results / args.split / args.max_start_distance /
                            f'{datetime.now().strftime("%Y%m%d-%H-%M-%S")}_{args.method.lower()}_gt_metric')
     path_results_folder.mkdir(exist_ok=True, parents=True)
     if default_logger is not None:

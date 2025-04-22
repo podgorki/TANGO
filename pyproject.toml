@@ -15,10 +15,24 @@ authors = [
     { name = "Lachlan Mares", email = "your.email@example.com" }
 ]
 dependencies = [
-    "torch",
     "numpy",
-    "opencv-python",
-    # add others as needed
+    "opencv-python==4.11.0.86",
+    "matplotlib",
+    "pyyaml",
+    "networkx",
+    "h5py",
+    "natsort",
+    "spatialmath-python",
+    "torch>=2.1",
+    "torchvision>=0.16",
+    "kornia",
+    "einops",
+    "ultralytics",
+]
+
+[project.optional-dependencies]
+habitat-lab = [
+    "habitat-lab==0.2.4.dev20230403",
 ]
 
 [tool.setuptools]

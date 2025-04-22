@@ -1,4 +1,5 @@
 ## Setup | Conda/Mamba | NO SAM2.1
+
 ```
 conda create -n nav
 conda activate nav
@@ -20,6 +21,7 @@ pip install -e habitat-lab
 ```
 
 ## Setup | Pip | WITH SAM2.1
+
 ```
 conda create -p ~/envs/habsam2
 conda activate ~/envs/habsam2
@@ -70,27 +72,43 @@ pip install warmup-scheduler diffusers==0.11.1 efficientnet_pytorch vit_pytorch 
 
 ## Data
 
-- Download official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) following their instructions.
-- Download official `InstanceImageNav` challenge dataset from [here](https://dl.fbaipublicfiles.com/habitat/data/datasets/imagenav/hm3d/v3/instance_imagenav_hm3d_v3.zip) (Direct Link | ~512 mb)
+- Download official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) following their
+  instructions.
+- Download official `InstanceImageNav` challenge dataset
+  from [here](https://dl.fbaipublicfiles.com/habitat/data/datasets/imagenav/hm3d/v3/instance_imagenav_hm3d_v3.zip) (
+  Direct Link | ~512 mb)
 
-Using the above, we generate train and val episodes (i.e., images along trajectories), which can be downloaded as below for testing and training.
+Using the above, we generate train and val episodes (i.e., images along trajectories), which can be downloaded as below
+for testing and training.
 
 ### Test Navigation
-- Download `hm3d_iin_val` trajectory data from [here](https://universityofadelaide.box.com/s/j4chd1uux1omyiscp544b26z5wjlt95d). 
-- Download `robohop.yaml` and `gnm_test.yaml` (if testing learnt controller) from [config files dir](https://universityofadelaide.box.com/s/hj5bmb81v2h1zpllaw2ib2lk3t8g6bfa) to `sg_habitat/configs/`
 
-Run `python goal_control.py --path_dataset <path to parent dir of all downloaded/symlinked dirs> --split val --method robohop`
+- Download `hm3d_iin_val` trajectory data
+  from [here](https://universityofadelaide.box.com/s/j4chd1uux1omyiscp544b26z5wjlt95d).
+- Download `robohop.yaml` and `gnm_test.yaml` (if testing learnt controller)
+  from [config files dir](https://universityofadelaide.box.com/s/hj5bmb81v2h1zpllaw2ib2lk3t8g6bfa) to
+  `sg_habitat/configs/`
 
+Run
+`python goal_control.py --path_dataset <path to parent dir of all downloaded/symlinked dirs> --split val --method robohop`
 
 ### Train Controller
-- Download `hm3d_iin_train` trajectory data from [here](https://universityofadelaide.box.com/s/cch6r0ue7z377q79g2j4vvemnq3ov8rg).
-- Download `gnm_sg.yaml` from [the same config files dir](https://universityofadelaide.box.com/s/hj5bmb81v2h1zpllaw2ib2lk3t8g6bfa) to `visualnav-transformer/train/config/gnm_sg.yaml`
-- Download `data_config.yaml` from [the same config files dir](https://universityofadelaide.box.com/s/hj5bmb81v2h1zpllaw2ib2lk3t8g6bfa) to `visualnav-transformer/train/vint_train/data/data_config.yaml`
-- Download precomputed h5 file for [gt_topometric masks](https://universityofadelaide.box.com/s/oy9z372e8i4a2rsrn78agpaploljpas4) or [sam21 masks](https://universityofadelaide.box.com/s/5z2sr6lvkax2l160vp8rz5iuqx8x7ogz)
+
+- Download `hm3d_iin_train` trajectory data
+  from [here](https://universityofadelaide.box.com/s/cch6r0ue7z377q79g2j4vvemnq3ov8rg).
+- Download `gnm_sg.yaml`
+  from [the same config files dir](https://universityofadelaide.box.com/s/hj5bmb81v2h1zpllaw2ib2lk3t8g6bfa) to
+  `visualnav-transformer/train/config/gnm_sg.yaml`
+- Download `data_config.yaml`
+  from [the same config files dir](https://universityofadelaide.box.com/s/hj5bmb81v2h1zpllaw2ib2lk3t8g6bfa) to
+  `visualnav-transformer/train/vint_train/data/data_config.yaml`
+- Download precomputed h5 file
+  for [gt_topometric masks](https://universityofadelaide.box.com/s/oy9z372e8i4a2rsrn78agpaploljpas4)
+  or [sam21 masks](https://universityofadelaide.box.com/s/5z2sr6lvkax2l160vp8rz5iuqx8x7ogz)
 - ~~Download data splits file from [here]()~~
 
-
 ## IGNORE Old Instructions below
+
 ```
 # Download SegmentMap repository from https://universityofadelaide.box.com/s/rbge9q7mv0alucvqjelx8odisw59mehm and place it in .`/auto_agents/`
 
@@ -114,14 +132,22 @@ cd checkpoints
 cd auto_agents/SegmentMap
 git clone https://github.com/AnyLoc/AnyLoc.git
 ```
+
 ### Examples
+
 #### Downloads
+
 Please first download image trajectory data from https://universityofadelaide.box.com/s/ahjnfds5xtjn2xh1f3f9rei8d8to418e
 
-You can also download the precomputed data (~2.4 GB, DINOv2 features and SAM masks for the above trajectory map) from https://universityofadelaide.box.com/s/zzj02dsz6qhaig4v8zd8ow0kqjxc26y6 and place contents of this folder directly in `./out/RoboHop/` (this path is set through `h5FullPath` argument when instantiating RoboHop)
+You can also download the precomputed data (~2.4 GB, DINOv2 features and SAM masks for the above trajectory map)
+from https://universityofadelaide.box.com/s/zzj02dsz6qhaig4v8zd8ow0kqjxc26y6 and place contents of this folder directly
+in `./out/RoboHop/` (this path is set through `h5FullPath` argument when instantiating RoboHop)
 
 #### Example Navigation
-The following will first create a map and a graph (if precomputed data is not being used), and then run a navigation episode (output logs are stored in `./out/runs/dump/.../controlLogs/matchings/`)
+
+The following will first create a map and a graph (if precomputed data is not being used), and then run a navigation
+episode (output logs are stored in `./out/runs/dump/.../controlLogs/matchings/`)
+
 ```
 # seed reproduces specific nav episodes
 python teleop.py --seed 6
@@ -130,11 +156,41 @@ python teleop.py --seed 6
 python teleop.py --seed 6 --weight_string "margin"
 ```
 
-#### Example Notebook
-See [tests/test_RH_skokloster.ipynb](./tests/test_RH_skokloster.ipynb)
+# new setup
 
+## create new env
 
-#### Example Habitat Sim Teleop w Semantic 
+```commandline
+python3.10 -m venv .venv --prompt tango
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+```
+
+## install only the controller with
+
+```commandLine
+pip install -e . --extra-index-url https://download.pytorch.org/whl/cu118 --prefer-binary
+  ```
+
+## install controller and sim (required for demo)
+
+### pre install habitat-sim
+
+```commandline
+cd third-party/
+git clone https://github.com/facebookresearch/habitat-sim.git
+cd habitat-sim/
+git checkout v0.2.4
+python setup.py install --cmake
+cd ../..
+```
+
+```commandLine
+pip install -e ".[habitat-lab]" --extra-index-url https://download.pytorch.org/whl/cu128 --prefer-binary
+``` 
+
+#### TANGO Demo
+
 ```
 cd <repo_dir>
 
@@ -142,31 +198,5 @@ cd <repo_dir>
 wget -O hm3d_00853-5cdEh9F2hJL.zip "https://universityofadelaide.app.box.com/index.php?rm=box_download_shared_file&shared_name=6w9kxhybckhh3883i9ybtc09ulmk9nuc&file_id=f_1562632791659"
 unzip hm3d_00853-5cdEh9F2hJL.zip
 
-# teleop using wad or arrows from terminal & display will update
-python scripts/hab_semantic_teleop.py
 
 ```
-
-
-### from instal script
-
-conda install -y -c conda-forge python=3.10
-conda install -y ffmpeg
-
-TMPDIR=$work/tmp/ pip install torch torchvision --force-reinstall --pre --extra-index-url https://download.pytorch.org/whl/cu118
-
-cd libs/segmentor/sam2/
-TMPDIR=$work/tmp/ pip install -e .
-
-TMPDIR=$work/tmp/ pip install opencv-python networkx h5py natsort einops scikit-learn kornia pgmpy python-igraph pyvis tyro scikit-image ipykernel spatialmath-python gdown utm seaborn wandb kaggle yacs cmake==3.14.3
-
-cd ../habitat-sim/
-python setup.py install --cmake
-
-cd ../habitat-lab/
-git checkout v0.2.4
-pip install -e habitat-lab
-
-pip install huggingface_hub==0.25.0 ultralytics
-pip install warmup-scheduler diffusers==0.11.1 efficientnet_pytorch vit_pytorch lmdb prettytable
-
