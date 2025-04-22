@@ -111,7 +111,6 @@ def run(args):
                     episode_runner.plot(ax, plt, step, display_img, depth, semantic_instance_sim)
 
 
-
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("--config_file", "-c",
