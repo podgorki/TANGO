@@ -176,6 +176,14 @@ pip install -e . --extra-index-url https://download.pytorch.org/whl/cu118 --pref
 
 ### pre install habitat-sim
 
+#### Dependencies
+```commandline
+sudo apt-get install -y --no-install-recommends libjpeg-dev libglm-dev libgl1-mesa-glx libegl1-mesa-dev mesa-utils xorg-dev freeglut3-dev
+pip install cmake==3.14.4
+pip install "numpy>=1.25,<2" --upgrade  # required before building habitat-sim
+```
+
+#### Sim (takes a bit)
 ```commandline
 cd third-party/
 git clone https://github.com/facebookresearch/habitat-sim.git
@@ -188,6 +196,18 @@ cd ../..
 ```commandLine
 pip install -e ".[habitat-lab]" --extra-index-url https://download.pytorch.org/whl/cu128 --prefer-binary
 ``` 
+
+### Depth anything
+Depth anything is installed by submoduling.
+
+
+Add a pth so you can resolve zoedepth
+```commandline
+echo "$PWD/third_party/depth_anything/metric_depth" > \
+     $(python -c "import site, sys; print(site.getsitepackages()[0])")/zoedepth_local.pth
+```
+The model weights are located at: https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints_metric_depth
+Place them in third_party/models/
 
 #### TANGO Demo
 

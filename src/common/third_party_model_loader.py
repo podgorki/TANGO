@@ -1,5 +1,7 @@
 import torch
 from pathlib import Path
+import importlib.resources as pkg_resources
+import third_party.models
 
 # ignore FutureWarning: torch.backends.cuda.sdp_kernel() is deprecated.
 import warnings
@@ -8,10 +10,11 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="contextlib")
 
 
 def get_depth_model():
-    from third_party.depth_anything.depth_anything_metric_model import DepthAnythingMetricModel
+    from src.depth.depth_anything_metric_model import DepthAnythingMetricModel
 
     depth_model_name = 'zoedepth'
-    path_zoe_depth = Path.cwd() / 'model_weights' / 'depth_anything_metric_depth_indoor.pt'
+    with pkg_resources.path(third_party.models, 'depth_anything_metric_depth_indoor.pt') as p:
+        path_zoe_depth = Path(p)  # p is a pathlib.Path object
     if not path_zoe_depth.exists():
         raise FileNotFoundError(f'{path_zoe_depth} not found...')
     depth_model = DepthAnythingMetricModel(

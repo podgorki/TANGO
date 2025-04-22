@@ -15,7 +15,7 @@ authors = [
     { name = "Lachlan Mares", email = "your.email@example.com" }
 ]
 dependencies = [
-    "numpy",
+    "numpy>=1.25,<2",
     "opencv-python==4.11.0.86",
     "matplotlib",
     "pyyaml",
@@ -39,4 +39,4 @@ habitat-lab = [
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "third_party"]

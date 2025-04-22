@@ -48,7 +48,6 @@ def run(args):
                 path_results_folder,
                 preload_data
             )
-            print("FUCK YOU")
             if args.plot:
                 ax, plt = episode_runner.init_plotting()
 
@@ -77,6 +76,7 @@ def run(args):
                 if args.plot:
                     episode_runner.plot(ax, plt, step, display_img, depth, semantic_instance_sim)
 
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("--config_file", "-c",
@@ -98,9 +98,4 @@ if __name__ == "__main__":
             for k, v in config.items():
                 setattr(args, k, v)
 
-    # setup traversable classes for TANGO
-    setattr(args, "traversable_class_names", [
-        'floor', 'flooring', 'floor mat', 'floor vent', 'carpet', 'mat', 'rug', 'doormat', 'shower floor', 'pavement',
-        'ground', 'tiles'
-    ])
     run(args)

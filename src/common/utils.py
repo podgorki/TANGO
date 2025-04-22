@@ -64,7 +64,14 @@ def get_default_args():
     return dict_to_args(args_dict)
 
 
-def get_sim_settings(scene, default_agent=0, sensor_height=1.5, width=256, height=256, hfov=90):
+def get_sim_settings(
+        scene: str,
+        default_agent: int = 0,
+        sensor_height: float = 1.5,
+        width: int = 256,
+        height: int = 256,
+        hfov: float = 90.
+) -> dict:
     sim_settings = {
         "scene": scene,  # Scene path
         "default_agent": default_agent,  # Index of the default agent
@@ -145,16 +152,21 @@ def make_simple_cfg(settings):
 
 
 def get_sim_agent(
-        test_scene,
-        updateNavMesh=False,
-        agent_radius=0.75,
-        width=320,
-        height=240,
-        hfov=90,
-        sensor_height=1.5
+        test_scene: str,
+        update_nav_mesh: bool = False,
+        agent_radius: float = 0.75,
+        width: int = 320,
+        height: int = 240,
+        hfov: float = 90.,
+        sensor_height: float = 1.5
 ):
-    sim_settings = get_sim_settings(scene=test_scene, width=width, height=height, hfov=hfov,
-                                    sensor_height=sensor_height)
+    sim_settings = get_sim_settings(
+        scene=test_scene,
+        width=width,
+        height=height,
+        hfov=hfov,
+        sensor_height=sensor_height
+    )
     cfg = make_simple_cfg(sim_settings)
     sim = habitat_sim.Simulator(cfg)
 
@@ -170,7 +182,7 @@ def get_sim_agent(
     # default action space contains 3 actions: move_forward, turn_left, and turn_right
     action_names = list(cfg.agents[sim_settings["default_agent"]].action_space.keys())
 
-    if updateNavMesh:
+    if update_nav_mesh:
         # update navmesh to avoid tight spaces
         navmesh_settings = habitat_sim.NavMeshSettings()
         navmesh_settings.set_defaults()
@@ -465,24 +477,19 @@ def print_scene_recur(scene, limit_output=10):
     if len(scene.levels) == 0:
         print_regions(scene.regions, limit_output, limit_output)
 
-    # # Print semantic annotation information (id, category, bounding box details)
-    # # about levels, regions and objects in a hierarchical fashion
-    # scene = sim.semantic_scene
-    # print_scene_recur(scene)
-
 
 def obj_id_to_int(obj):
     return int(obj.id.split("_")[-1])
 
 
-def get_instance_to_category_mapping(semanticScene):
+def get_instance_to_category_mapping(semantic_scene):
     instance_id_to_label_id = np.array(
-        [[obj_id_to_int(obj), obj.category.index()] for obj in semanticScene.objects])
+        [[obj_id_to_int(obj), obj.category.index()] for obj in semantic_scene.objects])
     return instance_id_to_label_id
 
 
-def get_instance_index_to_name_mapping(semanticScene):
-    instance_index_to_name = np.array([[i, obj.category.name()] for i, obj in enumerate(semanticScene.objects)])
+def get_instance_index_to_name_mapping(semantic_scene):
+    instance_index_to_name = np.array([[i, obj.category.name()] for i, obj in enumerate(semantic_scene.objects)])
     return instance_index_to_name
 
 

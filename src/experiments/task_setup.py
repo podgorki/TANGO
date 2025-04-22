@@ -84,7 +84,7 @@ class Episode:
             "codec": 'mp4v',
             "fps": 6
         }
-        self.vis = Visualizer(self.sim, self.agent, self.scene_name_hm3d, env=self.args.env)
+        self.vis = Visualizer(self.sim, self.agent, self.scene_name_hm3d)
         self.vis.draw_teach_run(self.agent_states)
 
     def setup_sim_agent(self) -> None:
@@ -112,8 +112,9 @@ class Episode:
         vel_control.ang_vel_is_local = True
         self.vel_control = vel_control
 
+        self.traversable_class_indices = np.array([])
         self.traversable_class_indices, self.bad_goal_classes, self.cull_instance_ids = get_semantic_filters(
-            self.sim, self.args.traversable_class_names
+            self.sim, self.args.sim["traversable_class_names"]
         )
 
     def set_segmentor(self) -> Optional[FastSamClass]:
@@ -311,10 +312,7 @@ class Episode:
     def log_results(self, final=False) -> None:
         if not final:
             if self.vis is not None:
-                if self.args.env == 'sim':
-                    self.update_vis_sim()
-                else:
-                    self.update_vis()
+                self.update_vis_sim()
 
     def update_vis_sim(self) -> None:
         # if this is the first call, init video
@@ -336,15 +334,6 @@ class Episode:
         )
         combined_img = np.concatenate((self.tdv, self.vis_img), axis=0)
         self.vis.save_video_frame(combined_img)
-
-    def update_vis(self) -> None:
-        # if this is the first call, init video
-        if self.vis.video is None:
-            self.video_cfg['width'] = self.vis_img.shape[1]
-            self.video_cfg['height'] = self.vis_img.shape[0]
-            self.vis.init_video(self.video_cfg)
-
-        self.vis.save_video_frame(self.vis_img)
 
     def plot(self, ax, plt, step, rgb, depth, semantic_instance) -> None:
         goals_image = None
@@ -471,14 +460,11 @@ def closest_state(sim, agent_states, distance_threshold: float, final_position=N
 
 def select_starting_state(sim, args, agent_states, final_position=None):
     # reverse traverse episodes end 1m before the original start, offset that
-    distance_threshold_offset = 1 if args.reverse else 0
+    distance_threshold_offset = 0
     if args.max_start_distance.lower() == 'easy':
         start_index = closest_state(
             sim, agent_states, 3 + distance_threshold_offset, final_position)
     elif args.max_start_distance.lower() == 'hard':
-        if args.task_type == 'via_alt_goal':
-            distance_threshold_offset += 3
-
         start_index = closest_state(
             sim, agent_states, 5 + distance_threshold_offset, final_position)
     elif args.max_start_distance.lower() == 'full':
@@ -493,7 +479,8 @@ def select_starting_state(sim, args, agent_states, final_position=None):
 def get_semantic_filters(sim, traversable_class_names):
     # setup is/is not traversable and which goals are banned (for the simulator runs)
     instance_index_to_name_map = utils.get_instance_index_to_name_mapping(
-        sim.semantic_scene)
+        sim.semantic_scene
+    )
     traversable_class_indices = instance_index_to_name_map[:, 0][
         np.isin(instance_index_to_name_map[:, 1], traversable_class_names)]
     traversable_class_indices = np.unique(
