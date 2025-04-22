@@ -206,9 +206,9 @@ Add a pth so you can resolve zoedepth
 echo "$PWD/third_party/depth_anything/metric_depth" > \
      $(python -c "import site, sys; print(site.getsitepackages()[0])")/zoedepth_local.pth
 ```
-The model weights are located at: https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints_metric_depth
-Place them in third_party/models/
-
+The depth anything model weights are located at: https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints_metric_depth
+And also grab the vit from here https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints
+place them in third_party/models/
 #### TANGO Demo
 
 ```

@@ -113,9 +113,9 @@ class Episode:
         self.vel_control = vel_control
 
         self.traversable_class_indices = np.array([])
-        self.traversable_class_indices, self.bad_goal_classes, self.cull_instance_ids = get_semantic_filters(
-            self.sim, self.args.sim["traversable_class_names"]
-        )
+        # self.traversable_class_indices, self.bad_goal_classes, self.cull_instance_ids = get_semantic_filters(
+        #     self.sim, self.args.sim["traversable_class_names"]
+        # )
 
     def set_segmentor(self) -> Optional[FastSamClass]:
         if self.args.infer_traversable:

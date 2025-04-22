@@ -21,18 +21,35 @@ def run(args):
         # workaround for hardcoded paths in depth anything
         import torch.hub as _hub
         # Absolute path to the bundled facebookresearch_dinov2_main
-        ROOT = Path(__file__).resolve().parents[1]  # …/TANGO
-        REAL_REPO = ROOT / "third_party" / "depth_anything" / "torchhub" / "facebookresearch_dinov2_main"
+        root = Path(__file__).resolve().parents[1]  # …/TANGO
+        real_torchhub_root = root / "third_party" / "depth_anything" / "torchhub" / "facebookresearch_dinov2_main"
 
         # Wrap the private _load_local so '../torchhub/…' in depth anything is rewritten to the real path
         _orig_load = _hub._load_local
 
         def _patched_load_local(repo_or_dir, model, *args, **kwargs):
             if repo_or_dir.startswith(".." + os.sep + "torchhub"):
-                repo_or_dir = str(REAL_REPO)
+                repo_or_dir = str(real_torchhub_root)
             return _orig_load(repo_or_dir, model, *args, **kwargs)
 
         _hub._load_local = _patched_load_local
+
+        models = root / "third_party" / "models"
+
+        # keep original loader
+        _orig_torch_load = torch.load
+
+        def _patched_torch_load(f, *args, **kwargs):
+            # if path starts with './checkpoints/' → reroute to models/
+            if isinstance(f, (str, Path)) and str(f).startswith("./checkpoints/"):
+                fname = Path(f).name  # e.g. 'depth_anything_vitl14.pth'
+                newpath = models / fname
+                if newpath.exists():
+                    f = str(newpath)
+            return _orig_torch_load(f, *args, **kwargs)
+
+        # install our patch
+        torch.load = _patched_torch_load
 
     # set up all the paths
     path_dataset = Path(args.path_dataset)
