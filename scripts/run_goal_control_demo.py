@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 
 from src.logger import default_logger
 from src.experiments import task_setup
-from src.utils import split_observations, get_traversibility
+from src.common import utils
 
 if 'LOG_LEVEL' not in os.environ:
     os.environ['LOG_LEVEL'] = "DEBUG"
@@ -90,7 +90,7 @@ def run(args):
                     break
 
                 observations = episode_runner.sim.get_sensor_observations()
-                display_img, depth, semantic_instance_sim = split_observations(observations)
+                display_img, depth, semantic_instance_sim = utils.split_observations(observations)
 
                 if args.infer_depth:
                     depth_scale = 0.44
@@ -99,7 +99,7 @@ def run(args):
                 episode_runner.get_goal(display_img, depth, semantic_instance_sim)
 
                 if not args.infer_traversable:  # override the FastSAM traversable mask
-                    episode_runner.traversable_mask = get_traversibility(
+                    episode_runner.traversable_mask = utils.get_traversibility(
                         torch.from_numpy(semantic_instance_sim),
                         episode_runner.traversable_class_indices
                     ).numpy()

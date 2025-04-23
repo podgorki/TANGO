@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import Optional
 
 from src.tango.robohop.controller import control_with_mask
-from src.utils import setup_sim_plots, build_intrinsics, apply_velocity, has_collided
 from src.common import utils, third_party_model_loader, utils_visualize
 from src.common.utils_sim_traj import get_goal_mask, find_shortest_path
 from src.segmentor.fast_sam_module import FastSamClass
@@ -134,7 +133,7 @@ class Episode:
                 Kd=self.pid_steer_values[2]
             )
 
-            intrinsics = build_intrinsics(
+            intrinsics = utils.build_intrinsics(
                 image_width=self.image_width,
                 image_height=self.image_height,
                 field_of_view_radians_u=self.hfov_radians,
@@ -181,7 +180,7 @@ class Episode:
         import matplotlib.style as mplstyle
         mplstyle.use('fast')
         mplstyle.use(['dark_background', 'ggplot', 'fast'])
-        fig, ax = setup_sim_plots()
+        fig, ax = utils_visualize.setup_sim_plots()
         fig.patch.set_facecolor('black')
         return ax, plt
 
@@ -264,7 +263,7 @@ class Episode:
                 self.vis_img = self.vis_img_default.copy()
 
         # elif control_method == 'pixnav':
-        #     self.pixnav_goal_mask = robohop_to_pixnav_goal_mask(
+        #     self.pixnav_goal_mask = utils.robohop_to_pixnav_goal_mask(
         #         self.goal_mask, depth)
         #     if not (step % 63) or self.discrete_action == 0:
         #         self.goal_controller.reset(
@@ -291,9 +290,9 @@ class Episode:
             action = action_dict[self.discrete_action]
             _ = self.sim.step(action)
             current_state = self.agent.state
-            self.collided = has_collided(self.sim, previous_state, current_state)
+            self.collided = utils.has_collided(self.sim, previous_state, current_state)
         else:
-            self.agent, self.sim, self.collided = apply_velocity(
+            self.agent, self.sim, self.collided = utils.apply_velocity(
                 vel_control=self.vel_control,
                 agent=self.agent,
                 sim=self.sim,

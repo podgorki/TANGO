@@ -4,7 +4,7 @@ import kornia as K
 from kornia import morphology as morph
 from scipy.interpolate import splrep, BSpline
 
-from src.utils import unproject_points
+from src.common import utils
 from src.tango.robohop.controller import control_with_mask
 from src.tango.path_finding.graphs import CostMapGraphNX
 
@@ -83,7 +83,7 @@ class TangoControl:
         homogeneous_pts = torch.ones(3, device=self.device)
         homogeneous_pts[0] = pixel_goal[1]
         homogeneous_pts[1] = pixel_goal[0]
-        unprojected_point = unproject_points(
+        unprojected_point = utils.unproject_points(
             depth[pixel_goal[0], pixel_goal[1]],
             intrinsics_inv=self.intrinsics_inv.float(),
             homogeneous_pts=homogeneous_pts

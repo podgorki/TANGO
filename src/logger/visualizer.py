@@ -1,17 +1,12 @@
-import os
-import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
-from pathlib import Path
-from natsort import natsorted
 import magnum as mn
 import cv2
 
 from habitat.utils.visualizations import maps
 
-import utils
-# import common.utils_sim_traj as ust
+from src.common import utils
 
 
 class Visualizer:

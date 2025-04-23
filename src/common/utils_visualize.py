@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 from typing import Optional
 
 
+def setup_sim_plots():
+    fig, ax = plt.subplots(2, 4, figsize=(12, 7), constrained_layout=True)
+    return fig, ax
+
+
 def value_to_colour(values, vmin=None, vmax=None, cm_name='jet'):
     cmap_paths = matplotlib.cm.get_cmap(cm_name)
     if vmin is None:
