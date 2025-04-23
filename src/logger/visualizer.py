@@ -163,23 +163,23 @@ def rot_to_heading(rot):
     heading = np.arctan2(R[0, 2], R[2, 2])
     return heading
 
-
-if __name__ == "__main__":
-    os.environ["MAGNUM_LOG"] = "quiet"
-    os.environ["HABITAT_SIM_LOG"] = "quiet"
-
-    path_dataset = Path("./data/")
-    split = "val"
-    path_scenes_root_hm3d = path_dataset / 'hm3d_v0.2' / split
-    path_episode_root = path_dataset / f'hm3d_iin_{split}'
-    path_episode = natsorted(list(path_episode_root.glob("*")))[1]
-
-    scene_name_hm3d = utils.get_hm3d_scene_name_from_episode_path(
-        path_episode, path_scenes_root_hm3d)
-
-    sim = None
-    agent = None
-    vis = Visualizer(sim, agent, scene_name_hm3d)
-    agent_states = np.load(f"{path_episode}/agent_states.npy", allow_pickle=True)
-    vis.draw_teach_run(agent_states, display=True)
-    vis.sim.close()
+#
+# if __name__ == "__main__":
+#     os.environ["MAGNUM_LOG"] = "quiet"
+#     os.environ["HABITAT_SIM_LOG"] = "quiet"
+#
+#     path_dataset = Path("./data/")
+#     split = "val"
+#     path_scenes_root_hm3d = path_dataset / 'hm3d_v0.2' / split
+#     path_episode_root = path_dataset / f'hm3d_iin_{split}'
+#     path_episode = natsorted(list(path_episode_root.glob("*")))[1]
+#
+#     scene_name_hm3d = utils.get_hm3d_scene_name_from_episode_path(
+#         path_episode, path_scenes_root_hm3d)
+#
+#     sim = None
+#     agent = None
+#     vis = Visualizer(sim, agent, scene_name_hm3d)
+#     agent_states = np.load(f"{path_episode}/agent_states.npy", allow_pickle=True)
+#     vis.draw_teach_run(agent_states, display=True)
+#     vis.sim.close()

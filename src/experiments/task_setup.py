@@ -92,11 +92,9 @@ class Episode:
         os.environ["HABITAT_SIM_LOG"] = "quiet"
 
         # get the scene
-        update_nav_mesh = False
         args_sim = self.args.sim
         self.sim, self.agent, vel_control = utils.get_sim_agent(
             self.scene_name_hm3d,
-            update_nav_mesh,
             width=args_sim["width"],
             height=args_sim["height"],
             hfov=args_sim["hfov"],

@@ -4,7 +4,7 @@ from spatialmath.base import trnorm
 
 import habitat_sim
 from habitat_sim.utils.common import quat_to_magnum
-from src.common.utils import getK_fromAgent
+from src.common.utils import get_K_from_agent
 
 
 def find_shortest_path(sim, p1, p2):
@@ -76,7 +76,7 @@ def get_goal_mask(sim, agent, depth, semantic, final_goal_position):
     H, W = depth.shape
     area_threshold = int(np.ceil(0.001 * H * W))
     curr_state = agent.get_state()
-    K = getK_fromAgent(agent)
+    K = get_K_from_agent(agent)
 
     points_data = get_navigable_points_on_instances(sim, K, curr_state, depth, semantic)
     if points_data is None:
