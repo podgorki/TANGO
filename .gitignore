@@ -50,6 +50,7 @@ coverage.xml            # coverage report :contentReference[oaicite:30]{index=30
 # PyCharm / JetBrains IDEs :contentReference[oaicite:33]{index=33}
 .idea/*
 *.iml                   # module files :contentReference[oaicite:34]{index=34}
+**/__pycache__
 
 # Other IDEs/editors
 .vscode/                # VS Code :contentReference[oaicite:35]{index=35}
