@@ -105,6 +105,13 @@ found at [website](...)
 
 
 ## Installation 
+
+Clone this repo - recursive is required for Depth Anything
+```commandline
+git clone --recursive https://github.com/podgorki/TANGO.git
+cd TANGO
+```
+
 ### Create new environment
 
 ```commandline
@@ -114,12 +121,6 @@ python -m pip install --upgrade pip setuptools wheel
 ```
 
 ## Install controller and sim (required for demo)
-
-Clone this repo - recursive is required for Depth Anything
-```commandline
-git clone --recursive https://github.com/podgorki/TANGO.git
-cd TANGO
-```
 
 ### Pre-install habitat-sim
 
