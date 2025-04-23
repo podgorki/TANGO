@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from PIL import Image
-import curses
-import datetime
-import os
-import quaternion
+# import curses
+# import datetime
+# import os
+# import quaternion
 import cv2
 import habitat_sim
 
@@ -308,51 +308,6 @@ def display_sample(rgb_obs, semantic_obs=np.array([]), depth_obs=np.array([])):
     plt.show(block=True)
 
 
-def navigateAndSee(action, action_names, sim, display=False):
-    if action in action_names:
-        observations = sim.step(action)
-        print("action: ", action)
-        if display:
-            display_sample(observations["color_sensor"])
-
-
-# Function to translate keyboard commands to action strings
-def map_keyB2Act(key_command):
-    if key_command == 'w':
-        action = 'move_forward'
-    elif key_command == 'a':
-        action = 'turn_left'
-    elif key_command == 'd':
-        action = 'turn_right'
-    else:
-        return None
-    return action
-
-
-def get_kb_command():
-    stdscr = curses.initscr()
-    curses.cbreak()
-    stdscr.keypad(1)
-
-    key_command = stdscr.getch()
-    key_mapping = {
-        ord('w'): 'w',
-        ord('a'): 'a',
-        ord('d'): 'd',
-        curses.KEY_UP: 'w',
-        curses.KEY_LEFT: 'a',
-        curses.KEY_RIGHT: 'd'
-    }
-    command = key_mapping.get(key_command)
-
-    curses.nocbreak()
-    stdscr.keypad(0)
-    curses.echo()
-    curses.endwin()
-
-    return command
-
-
 def apply_velocity(agent, sim, velocity, rotation_velocity, time_step=0.1):
     # Update position))
     forward_vec = habitat_sim.utils.quat_rotate_vector(agent.state.rotation, np.array([0, 0, -1.0]))
@@ -375,57 +330,6 @@ def apply_velocity(agent, sim, velocity, rotation_velocity, time_step=0.1):
     return observations
 
 
-def createTimestampedFolderPath(outdir, prefix, subfolder="", excTime=False):
-    """
-    Create a folder with a timestamped name in the outdir
-    :param outdir: where to create the folder
-    :param prefix: prefix for the folder name
-    :param subfolder: subfolder name, can be a list of subfolders
-    :return: paths to the created folder and subfolders
-    """
-    current_time = datetime.datetime.now()
-    formatted_time = current_time.strftime('%Y%m%d%H%M%S%f')
-    if excTime: formatted_time = ""
-    folder_path = f'{outdir}/{prefix}_{formatted_time}'
-    if type(subfolder) == str:
-        subfolder = [subfolder]
-    sfPaths = []
-    for sf in subfolder:
-        subfolder_path = f'{outdir}/{prefix}_{formatted_time}/{sf}'
-        os.makedirs(subfolder_path, exist_ok=True)
-        sfPaths.append(subfolder_path)
-    return folder_path, *sfPaths
-
-
-def get_autoagent_action(autoagent, currImg, agent_params, time_step):
-    autoagent.maintain_history(currImg)
-    dists, wayps = [], []
-    for mapimg in autoagent.topomap:
-        dist, wayp = autoagent.predict_currHistAndGoal(autoagent.currImgHistory, mapimg)
-        dists.append(dist)
-        wayps.append(wayp)
-    ptr = np.argmin(dists)
-    # autoagent.updateLocalMap(ptr)
-    print(ptr, autoagent.localmapIdx)
-    wayp = wayps[min(ptr + 2, len(autoagent.topomap) - 1)][0][2]
-    dx, dy = wayp[:2]
-    theta = np.arctan(dy / dx) / 3.14 * 180
-    v, w = autoagent.waypoint_to_velocity(wayp, agent_params, time_step)
-    return v, w, dx, theta
-
-
-def compute_pose_err(s1, s2):
-    """
-    Compute the position and rotation error between two agent states
-    :param s1: habitat_sim.AgentState
-    :param s2: habitat_sim.AgentState
-    :return: (float, float) position error, rotation error (degrees)
-    """
-    pos_err = np.linalg.norm(s1.position - s2.position)
-    rot_err = np.rad2deg(quaternion.rotation_intrinsic_distance(s1.rotation, s2.rotation))
-    return pos_err, rot_err
-
-
 # Habitat Semantics
 def findAnnotationPath(scenePath):
     # find split name from among ['train', 'val', 'test', 'minival']
@@ -441,65 +345,13 @@ def findAnnotationPath(scenePath):
         return f"{pathTillSplit}/{split}/hm3d_annotated_{split}_basis.scene_dataset_config.json"
 
 
-def print_regions(regions, max_regions=10, max_objects=10):
-    region_count = 0
-    for region in regions:
-        category = region.category.name() if region.category is not None else None
-        print(
-            f"\t Region id:{region.id}, {category=},"
-            f" center:{region.aabb.center}, dims:{region.aabb.sizes}"
-        )
-        object_count = 0
-        for obj in region.objects:
-            print(
-                f"\t \t Object id:{obj.id}, category:{obj.category.name()},"
-                f" center:{obj.aabb.center}, dims:{obj.aabb.sizes}"
-            )
-            object_count += 1
-            if object_count >= max_objects:
-                break
-        region_count += 1
-        if region_count >= max_regions:
-            break
-
-
-def print_scene_recur(scene, limit_output=10):
-    print(f"House has {len(scene.levels)} levels, {len(scene.regions)} regions and {len(scene.objects)} objects")
-    print(f"House center:{scene.aabb.center} dims:{scene.aabb.sizes}")
-
-    for level in scene.levels:
-        print(
-            f"Level id:{level.id}, center:{level.aabb.center},"
-            f" dims:{level.aabb.sizes}"
-        )
-        print_regions(level.regions, limit_output, limit_output)
-
-    if len(scene.levels) == 0:
-        print_regions(scene.regions, limit_output, limit_output)
-
-
 def obj_id_to_int(obj):
     return int(obj.id.split("_")[-1])
-
-
-def get_instance_to_category_mapping(semantic_scene):
-    instance_id_to_label_id = np.array(
-        [[obj_id_to_int(obj), obj.category.index()] for obj in semantic_scene.objects])
-    return instance_id_to_label_id
 
 
 def get_instance_index_to_name_mapping(semantic_scene):
     instance_index_to_name = np.array([[i, obj.category.name()] for i, obj in enumerate(semantic_scene.objects)])
     return instance_index_to_name
-
-
-def get_instance_id_to_region_id_mapping(semantic_scene):
-    instance_index_to_region_id = np.array(
-        [[obj_id_to_int(obj), int(obj.region.id[1:])] for obj in semantic_scene.objects])
-
-    # check if object ids iterate exactly over total objects
-    assert (instance_index_to_region_id[-1, 0] == len(semantic_scene.objects) - 1)
-    return instance_index_to_region_id
 
 
 def get_region_id_to_instance_id_dict(semantic_scene):
@@ -556,61 +408,6 @@ def sample_goal_instances_across_regions(semantic_scene, seed=None):
             f"Region: {region.id}, Instance: {goal_instance_ids[-1]}, Category: {instance.category.name()}, coords: {instance_coords}, region center: {region.aabb.center}")
 
     return goal_instance_ids, goal_instance_coords
-
-
-def sample_goal_instances_across_regions_indirect(semantic_scene, num_goals=2, repeat_regions=False):
-    cat_to_avoid = ['Unknown', 'wall', 'ceiling', 'floor']
-    reg_to_insta_dict = get_region_id_to_instance_id_dict(semantic_scene)
-    insta_to_cat_map = get_instance_index_to_name_mapping(semantic_scene)
-    insta_to_all_dict = get_instance_id_to_all_dict(semantic_scene)
-
-    # sample regions
-    num_extra_samples = 5  # to avoid regions with no filtered instances
-    reg_ids = list(reg_to_insta_dict.keys())
-    num_regions_to_sample = min(num_goals + num_extra_samples, len(reg_ids))
-    reg_ids = np.random.choice(reg_ids, num_regions_to_sample, replace=repeat_regions)
-
-    goal_instance_ids = []
-    goal_instance_coords = []
-    i = -1
-    while len(goal_instance_ids) < num_goals:
-        i += 1
-        reg_id = reg_ids[i]
-
-        # sample an instance not in cat_to_avoid
-        insta_ids = reg_to_insta_dict[reg_id]
-        insta_ids_filtered = [insta_id for insta_id in insta_ids if insta_to_cat_map[insta_id][1] not in cat_to_avoid]
-        if len(insta_ids_filtered) == 0:
-            continue
-        insta_id = np.random.choice(insta_ids_filtered)
-        insta_coords = insta_to_all_dict[insta_id].aabb.center
-        goal_instance_ids.append(insta_id)
-        goal_instance_coords.append(insta_coords)
-
-        print(
-            f"Region: {reg_id}, Instance: {insta_id}, Category: {insta_to_cat_map[insta_id][1]}, coords: {insta_coords}, region center: {semantic_scene.regions[reg_id].aabb.center}")
-
-    return goal_instance_ids, goal_instance_coords
-
-
-def obs_from_state(episode, state, sensor="color_sensor"):
-    episode.agent.set_state(state)
-    observations = episode.sim.get_sensor_observations()
-    if sensor == "color_sensor":
-        obs = np.array(Image.fromarray(observations["color_sensor"], mode="RGBA").convert('RGB'))
-    else:
-        obs = observations[sensor]
-    return obs
-
-
-def getImg(sim):
-    observations = sim.get_sensor_observations()
-    rgb = observations["color_sensor"]
-    depth = observations["depth_sensor"]
-    semantic = None
-    if "semantic_sensor" in observations:
-        semantic = observations["semantic_sensor"]
-    return rgb, depth, semantic
 
 
 def get_hm3d_scene_name_from_episode_path(path_episode, path_scenes_root_hm3d):

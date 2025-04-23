@@ -5,7 +5,7 @@
 <img width="1200" alt="image" src="./data/tango_teaser.png">
 
 This is the official implementation of the paper. Please refer to the [paper](...) and 
-[website](https://podgorki.github.io/TANGO/) for more technique details.
+[website](https://podgorki.github.io/TANGO/) for more technical details.
 
 This repository contains the TANGO controller and a minimal setup required to show the demo on habitat-sim. 
 
@@ -124,7 +124,7 @@ pip install cmake==3.14.4
 pip install "numpy>=1.25,<2" --upgrade  # required before building habitat-sim
 ```
 
-#### Build the Sim (takes a bit)
+#### Clone and build the Sim (takes a bit)
 ```commandline
 cd third-party/
 git clone https://github.com/facebookresearch/habitat-sim.git
