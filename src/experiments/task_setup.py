@@ -12,7 +12,7 @@ from src.plotting import plot_utils, utils_visualize
 from src.tango.robohop.controller import control_with_mask
 from src.utils import setup_sim_plots, build_intrinsics, apply_velocity, robohop_to_pixnav_goal_mask, has_collided
 from src.common import utils_data, utils, third_party_model_loader
-from src.common.utils_sim_traj import get_pathlength_GT, find_shortest_path
+from src.common.utils_sim_traj import get_goal_mask, find_shortest_path
 from src.segmentor.fast_sam_module import FastSamClass
 from src.logger.visualizer import Visualizer
 from src.logger.level import LOG_LEVEL
@@ -224,13 +224,12 @@ class Episode:
 
     def get_goal(self, rgb, depth, semantic_instance) -> None:
         self.goal_mask = None
-        _, _, self.goal_mask = get_pathlength_GT(
+        self.goal_mask = get_goal_mask(
             self.sim,
             self.agent,
             depth,
             semantic_instance,
             self.final_goal_position,
-            None,
         )
         self.semantic_control_input = semantic_instance
         if self.args.infer_traversable:
