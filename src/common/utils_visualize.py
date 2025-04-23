@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 from typing import Optional
 
 
-def value_to_colour(values, vmin=None, vmax=None, cmName='jet'):
-    cmapPaths = matplotlib.cm.get_cmap(cmName)
+def value_to_colour(values, vmin=None, vmax=None, cm_name='jet'):
+    cmap_paths = matplotlib.cm.get_cmap(cm_name)
     if vmin is None:
         vmin = min(values)
     if vmax is None:
         vmax = max(values)
     norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
-    colors = np.array([cmapPaths(norm(value))[:3] for value in values])
+    colors = np.array([cmap_paths(norm(value))[:3] for value in values])
     return colors, norm
 
 

@@ -46,7 +46,7 @@ def control_with_mask(
     w = -x_off * gain / (width // 2)
     v = v
 
-    colors, norm = utils_visualize.value_to_colour(weights, cmName='viridis')
+    colors, norm = utils_visualize.value_to_colour(weights, cm_name='viridis')
     visualize_image = utils_visualize.visualize_flow(
         coords, coords_ref, goal_mask, colors, weights
     ).astype(float) / 255.0

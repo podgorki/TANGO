@@ -253,7 +253,7 @@ class FastSamClass:
     def visualize(self, image: np.array, masks: np.array):
         if type(masks[0]) == dict:
             masks = [m['segmentation'] for m in masks]
-        colors, _ = src.plotting.utils_visualize.value_to_colour(np.arange(len(masks)), cmName='viridis')
+        colors, _ = src.plotting.utils_visualize.value_to_colour(np.arange(len(masks)), cm_name='viridis')
         img = cv2.resize(image, (self.image_width, self.image_height))
         viz = src.plotting.utils_visualize.draw_masks_with_colours(img, masks, colors)
         plt.imshow(viz)
