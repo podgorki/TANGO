@@ -1,12 +1,10 @@
-
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import magnum as mn
-import cv2
-
-from habitat.utils.visualizations import maps
 
 from src.common import utils
+from habitat.utils.visualizations import maps
 
 
 class Visualizer:
@@ -33,7 +31,8 @@ class Visualizer:
 
     def init_video(self, video_cfg):
         self.video = cv2.VideoWriter(video_cfg['savepath'], cv2.VideoWriter_fourcc(
-            *video_cfg['codec']), video_cfg['fps'], (video_cfg.get('width', self.tdv_dims[1]), video_cfg.get('height', self.tdv_dims[0])))
+            *video_cfg['codec']), video_cfg['fps'], (video_cfg.get('width', self.tdv_dims[1]),
+                                                     video_cfg.get('height', self.tdv_dims[0])))
 
     def create_top_down_map(self, height=None, meters_per_pixel=0.025):
         if height is None:
@@ -48,7 +47,7 @@ class Visualizer:
         )
         top_down_map = recolor_map[top_down_map]
         self.tdv = top_down_map
-        self.tdv_dims = (self.tdv.shape[0], self.tdv.shape[1]) # (height, width)
+        self.tdv_dims = (self.tdv.shape[0], self.tdv.shape[1])  # (height, width)
 
     def sim_to_tdv(self, path_point):
         tdv_point = maps.to_grid(
@@ -83,13 +82,13 @@ class Visualizer:
         else:
             pt = (point[1], point[0])
             markersize = 10
-            markerfacecolor = (31, 119, 179) # RGB for 'tab:blue'
+            markerfacecolor = (31, 119, 179)  # RGB for 'tab:blue'
             markeredgecolor = (255, 255, 255)
 
             # draw outer border
             cv2.circle(self.tdv, pt, markersize, markeredgecolor, -1, cv2.LINE_AA)
 
-            cv2.circle(self.tdv, pt, markersize-2,
+            cv2.circle(self.tdv, pt, markersize - 2,
                        markerfacecolor, -1, cv2.LINE_AA)
 
     def draw_goal(self, point, ax=None):
@@ -104,7 +103,7 @@ class Visualizer:
             # draw outer border
             cv2.drawMarker(self.tdv, [point[1], point[0]], markerfacecolor,
                            cv2.MARKER_TRIANGLE_UP, markersize, 4, cv2.LINE_AA)
-            cv2.drawMarker(self.tdv, [point[1], point[0]+5], markerfacecolor,
+            cv2.drawMarker(self.tdv, [point[1], point[0] + 5], markerfacecolor,
                            cv2.MARKER_TRIANGLE_DOWN, markersize, 4, cv2.LINE_AA)
 
     def draw_teach_run(self, agent_states, draw_traj=False, display=False, save_path=None):
