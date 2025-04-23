@@ -48,8 +48,7 @@ def control_with_mask(
 
     colors, norm = utils_visualize.value_to_colour(weights, cmName='viridis')
     visualize_image = utils_visualize.visualize_flow(
-        coords, coords_ref, goal_mask, colors, norm, weights, fwdVals=None, display=False,
-        colorbar=False
+        coords, coords_ref, goal_mask, colors, weights
     ).astype(float) / 255.0
     visualize_image[outliers] = [255, 255, 255]
     return v, w, visualize_image

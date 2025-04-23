@@ -94,7 +94,7 @@ def make_simple_cfg(settings):
     if "scene_dataset_config_file" in settings:
         sim_cfg.scene_dataset_config_file = settings["scene_dataset_config_file"]
     else:
-        annotConfigPath = findAnnotationPath(settings["scene"])
+        annotConfigPath = find_annotation_path(settings["scene"])
         if annotConfigPath is not None:
             print(f"Annotation file found: {annotConfigPath}")
             sim_cfg.scene_dataset_config_file = annotConfigPath
@@ -196,18 +196,18 @@ def get_K_from_agent(agent):
     return get_K_from_parameters(specs.hfov, specs.resolution[1], specs.resolution[0])
 
 # Habitat Semantics
-def findAnnotationPath(scenePath):
+def find_annotation_path(scene_path):
     # find split name from among ['train', 'val', 'test', 'minival']
     split = None
-    for s in ['train', 'minival', 'val', 'test']:  # TODO: 'val' inside 'minival'
-        if s in scenePath:
+    for s in ['train', 'minival', 'val', 'test']:
+        if s in scene_path:
             split = s
-            pathTillSplit = scenePath.split(split)[0]
+            path_till_split = scene_path.split(split)[0]
             break
     if split is None:
         return None
     else:
-        return f"{pathTillSplit}/{split}/hm3d_annotated_{split}_basis.scene_dataset_config.json"
+        return f"{path_till_split}/{split}/hm3d_annotated_{split}_basis.scene_dataset_config.json"
 
 
 def obj_id_to_int(obj):
