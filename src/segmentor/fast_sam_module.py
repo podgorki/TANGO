@@ -13,9 +13,6 @@ Description:
 import os
 import sys
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-
 import torch
 import torch.nn.functional as F
 import cv2

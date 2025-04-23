@@ -337,7 +337,7 @@ def apply_velocity(vel_control, agent, sim, velocity, steer, time_step):
     )
     agent.set_state(agent_state)
 
-    # Check if a collision occured
+    # Check if a collision occurred
     dist_moved_before_filter = (
             target_rigid_state.translation - previous_rigid_state.translation
     ).dot()

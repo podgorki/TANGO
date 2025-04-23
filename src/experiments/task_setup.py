@@ -4,8 +4,10 @@ import torch
 import logging
 import habitat_sim
 import numpy as np
-from datetime import datetime
+from pathlib import Path
 from typing import Optional
+from datetime import datetime
+from argparse import Namespace
 
 from src.tango.robohop.controller import control_with_mask
 from src.common import utils, third_party_model_loader, utils_visualize
@@ -13,8 +15,6 @@ from src.common.utils_sim_traj import get_goal_mask, find_shortest_path
 from src.segmentor.fast_sam_module import FastSamClass
 from src.logger.visualizer import Visualizer
 from src.logger.level import LOG_LEVEL
-from argparse import Namespace
-from pathlib import Path
 
 logger = logging.getLogger("[Task Setup]")  # logger level is explicitly set below by LOG_LEVEL
 logger.setLevel(LOG_LEVEL)
