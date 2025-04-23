@@ -4,14 +4,12 @@ import torch
 import logging
 import habitat_sim
 import numpy as np
-from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
-from src.plotting import plot_utils, utils_visualize
 from src.tango.robohop.controller import control_with_mask
-from src.utils import setup_sim_plots, build_intrinsics, apply_velocity, robohop_to_pixnav_goal_mask, has_collided
-from src.common import utils_data, utils, third_party_model_loader
+from src.utils import setup_sim_plots, build_intrinsics, apply_velocity, has_collided
+from src.common import utils, third_party_model_loader, utils_visualize
 from src.common.utils_sim_traj import get_goal_mask, find_shortest_path
 from src.segmentor.fast_sam_module import FastSamClass
 from src.logger.visualizer import Visualizer
@@ -339,7 +337,7 @@ class Episode:
         # if self.args.method.lower() == 'pixnav':
         #     goal += (self.pixnav_goal_mask / self.pixnav_goal_mask.max()).astype(int) * 2
 
-        plot_utils.plot_sensors(
+        utils_visualize.plot_sensors(
             ax=ax,
             display_img=rgb,
             semantic=semantic_instance_vis,
@@ -352,7 +350,7 @@ class Episode:
         )
 
         if self.args.method.lower() == 'tango':
-            plot_utils.plot_path_points(
+            utils_visualize.plot_path_points(
                 ax=[ax[1, 2], ax[1, 0]],
                 points=self.goal_controller.point_poses,
                 cost_map_relative_bev=self.goal_controller.planning_cost_map_relative_bev_safe,
