@@ -169,19 +169,11 @@ python -m scripts.run_goal_control_demo
 ## BibTex
 Please cite our paper if you find it helpful :)
 ```
-
-[//]: # (@inproceedings{cai2024bridging,)
-
-[//]: # (  title={Bridging zero-shot object navigation and foundation models through pixel-guided navigation skill},)
-
-[//]: # (  author={Cai, Wenzhe and Huang, Siyuan and Cheng, Guangran and Long, Yuxing and Gao, Peng and Sun, Changyin and Dong, Hao},)
-
-[//]: # (  booktitle={2024 IEEE International Conference on Robotics and Automation &#40;ICRA&#41;},)
-
-[//]: # (  pages={5228--5234},)
-
-[//]: # (  year={2024},)
-
-[//]: # (  organization={IEEE})
-
-[//]: # (})
+@inproceedings{podgorski2025tango,
+  title={TANGO: Traversablility-Aware Navigation with Local Metric Control for Topological Goals},
+  author={Podgorski, Stefan and Garg, Sourav and Hosseinzadeh, Mehdi and Mares, Lachlan and Dayoub, Feras and Reid, Ian},
+  booktitle={2025 IEEE International Conference on Robotics and Automation (ICRA)},
+  year={2025},
+  organization={IEEE}
+}
+```
