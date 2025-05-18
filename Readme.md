@@ -4,7 +4,7 @@
 
 <img width="1200" alt="image" src="./data/tango_teaser.png">
 
-This is the official implementation of the paper. Please refer to the [paper](...) and 
+This is the official implementation of the paper. Please refer to the [paper](https://github.com/podgorki/TANGO/blob/master/data/ICRA2025-TANGO-Navigation.pdf) and 
 [website](https://podgorki.github.io/TANGO/) for more technical details.
 
 This repository contains the TANGO controller and a minimal setup required to show the demo on habitat-sim. 
