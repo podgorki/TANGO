@@ -66,7 +66,7 @@ def run(args):
 
     episodes = task_setup.load_run_list(path_episode_root)[args.start_index:args.end_index:args.steps_index]
     if len(episodes) == 0:
-        raise ValueError(f"No episodes found in {path_episode_root}.
+        raise ValueError(f"No episodes found in {path_episode_root}. \
         Please check 'path_dataset' in config.")
 
     for ei, path_episode in tqdm(
@@ -76,8 +76,8 @@ def run(args):
         path_scene_hm3d = sorted(path_scenes_root_hm3d.glob(f'*{episode_name}'))
 
         if len(path_scene_hm3d) == 0:
-            raise ValueError(f"No scene found for {path_episode=} in 
-            {path_scenes_root_hm3d=}. Either official hm3d_v0.2 is missing 
+            raise ValueError(f"No scene found for {path_episode=} in \
+            {path_scenes_root_hm3d=}. Either official hm3d_v0.2 is missing \
             or not found in 'path_dataset' dir.")
         else:
             scene_name_hm3d = str(sorted(path_scene_hm3d[0].glob('*basis.glb'))[0])
