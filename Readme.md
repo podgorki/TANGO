@@ -1,4 +1,4 @@
-# TANGO: Traversability-Aware Navigation with Local Metric Control for Topological Goals, ICRA 2025
+# TANGO: Traversability-Aware Navigation with Local Metric Control for Topological Goals [ICRA 2025]
 
 <img width="1200" alt="image" src="./data/tango_pipeline.JPG">
 
