@@ -69,3 +69,6 @@ third_party/habitat-sim/*
 .venv/*
 /third_party/habitat-sim/3.14.0
 /src/tango.egg-info/*
+data/hm3d_iin_val/*
+data/hm3d_v0.2*
+out/*
