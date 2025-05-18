@@ -65,6 +65,9 @@ def run(args):
     preload_data = task_setup.preload_models(args)
 
     episodes = task_setup.load_run_list(path_episode_root)[args.start_index:args.end_index:args.steps_index]
+    if len(episodes) == 0:
+        raise ValueError(f"No episodes found in {path_episode_root}.
+        Please check 'path_dataset' in config.")
 
     for ei, path_episode in tqdm(
             enumerate(episodes), total=len(episodes), desc=f'Processing Episodes (Total: {len(episodes)})'
@@ -72,7 +75,11 @@ def run(args):
         episode_name = path_episode.parts[-1].split('_')[0]
         path_scene_hm3d = sorted(path_scenes_root_hm3d.glob(f'*{episode_name}'))
 
-        if len(path_scene_hm3d) > 0:
+        if len(path_scene_hm3d) == 0:
+            raise ValueError(f"No scene found for {path_episode=} in 
+            {path_scenes_root_hm3d=}. Either official hm3d_v0.2 is missing 
+            or not found in 'path_dataset' dir.")
+        else:
             scene_name_hm3d = str(sorted(path_scene_hm3d[0].glob('*basis.glb'))[0])
 
             episode_runner = task_setup.Episode(
@@ -114,7 +121,7 @@ def run(args):
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("--config_file", "-c",
-                        help="Path to the config file", default="configs/tango.yaml")
+                        help="Path to the config file", default="configs/tango_default.yaml")
     return parser.parse_args()
 
 
@@ -131,5 +138,7 @@ if __name__ == "__main__":
             # pass the config to the args
             for k, v in config.items():
                 setattr(args, k, v)
+    else:
+        raise ValueError(f"Config file {config_file} does not exist")
 
     run(args)
