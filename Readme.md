@@ -7,10 +7,12 @@
 This is the official implementation of the paper. Please refer to the [paper](https://github.com/podgorki/TANGO/blob/master/data/ICRA2025-TANGO-Navigation.pdf) and 
 [website](https://podgorki.github.io/TANGO/) for more technical details.
 
-This repository contains the TANGO controller and a minimal setup required to show the demo on habitat-sim. 
 
 This work is based off a larger project beginning with RoboHop and the full evaluation for this code and Robohop can be 
-found at [website](...) 
+found [here](https://github.com/oravus/object-rel-nav).
+
+This repository contains the TANGO controller, and supports testing the `gt_metric` source of topological goals obtained from the simulator. Please refer to the [paper](https://github.com/podgorki/TANGO/blob/master/data/ICRA2025-TANGO-Navigation.pdf) for more details.
+
 
 ## Results
 <div align="center">
