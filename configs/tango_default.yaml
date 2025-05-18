@@ -1,11 +1,11 @@
 # required paths
-path_dataset: 'path/to/dataset'
+path_dataset: './data/'
 path_models: 'third_party/models/'
-path_results: 'path/to/results_save'
+path_results: './out/'
 
 # start and stop indexes for runs
 start_index: 0
-end_index: 200
+end_index: 108
 steps_index: 1
 # running from list of winners or failure or no good
 
@@ -13,7 +13,7 @@ steps_index: 1
 split: 'val'  # train, val
 max_steps: 500
 threshold_goal_distance: 1.0  # in meters
-max_start_distance: 'full'  # ['easy', 'hard', 'full']
+max_start_distance: 'easy'  # ['easy', 'hard', 'full']
 sim:
   hfov: 120
   width: 320
