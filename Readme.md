@@ -4,14 +4,9 @@
 
 <img width="1200" alt="image" src="./data/tango_teaser.png">
 
-This is the official implementation of the paper. Please refer to the [paper](https://github.com/podgorki/TANGO/blob/master/data/ICRA2025-TANGO-Navigation.pdf) and 
-[website](https://podgorki.github.io/TANGO/) for more technical details.
+This is the official implementation of TANGO. [[PDF]](https://github.com/podgorki/TANGO/blob/master/data/ICRA2025-TANGO-Navigation.pdf) [[Project Page]](https://podgorki.github.io/TANGO/)
 
-
-This work is based off a larger project beginning with RoboHop and the full evaluation for this code and Robohop can be 
-found [here](https://github.com/oravus/object-rel-nav).
-
-This repository contains the TANGO controller, and supports testing the `gt_metric` source of topological goals obtained from the simulator. Please refer to the [paper](https://github.com/podgorki/TANGO/blob/master/data/ICRA2025-TANGO-Navigation.pdf) for more details.
+This repository contains the TANGO controller, and supports testing the `gt_metric` source of topological goals obtained from the simulator. For complete evaluation, please refer to [this](https://github.com/oravus/object-rel-nav).
 
 
 ## Results
