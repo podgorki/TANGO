@@ -175,7 +175,11 @@ class Episode:
             matplotlib.use('Agg')  # Use the Agg backend to suppress plots
             self.set_logging()
         else:
-            matplotlib.use('TkAgg')
+            # try-except for headless testing
+            try:
+                matplotlib.use('TkAgg')
+            except:
+                matplotlib.use('Agg')
 
         import matplotlib.style as mplstyle
         mplstyle.use('fast')
