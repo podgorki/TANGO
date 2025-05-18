@@ -161,7 +161,10 @@ And also grab the vit from here https://huggingface.co/spaces/LiheYoung/Depth-An
 place them in third_party/models/
 
 ## TANGO Demo
-Update the config yaml with the dataset locations
+Download official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) following their instructions. Place (or synlink) it at `./data/`.
+
+Unzip test data: `unzip data/hm3d_iin_val.zip -d ./data/`
+
 ```commandline
 python -m scripts.run_goal_control_demo
 ```
