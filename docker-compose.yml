@@ -1,0 +1,26 @@
+services:
+  tango:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    container_name: tango
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - PYTHONPATH=/app
+      - MAGNUM_LOG=quiet
+      - HABITAT_SIM_LOG=quiet
+      - LOG_LEVEL=DEBUG
+    volumes:
+      # Mount external directories for logs and outputs
+      - ./logs:/app/logs
+      - ./outputs:/app/outputs
+      - ./data:/app/data
+      # Mount model weights directory
+      - ./third_party/models:/app/third_party/models
+      # Mount config for runtime modifications
+      - ./configs:/app/configs:ro
+    working_dir: /app
+    command: ["python", "scripts/run_goal_control_demo.py", "--config_file", "configs/tango_default.yaml"]
