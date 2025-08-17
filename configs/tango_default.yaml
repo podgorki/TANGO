@@ -1,7 +1,7 @@
 # required paths
 path_dataset: './data/'
 path_models: 'third_party/models/'
-path_results: './out/'
+path_results: './outputs/'
 
 # start and stop indexes for runs
 start_index: 0
