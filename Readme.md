@@ -157,6 +157,37 @@ The depth anything model weights are located at: https://huggingface.co/spaces/L
 And also grab the vit from here https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints
 place them in third_party/models/
 
+## Docker Setup (Alternative)
+
+### Prerequisites
+
+- Docker >= 20.10.0 with NVIDIA Container Toolkit installed ([installation guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html))
+- Docker Compose >= 2.0.0
+- NVIDIA GPU drivers
+
+### Quick Start
+
+1. **Set up X11 display forwarding:**
+   ```bash
+   xhost +local:docker
+   touch /tmp/.docker.xauth
+   chmod 666 /tmp/.docker.xauth
+   ```
+
+2. **Build and run the container:**
+   ```bash
+   docker-compose up --build
+   ```
+
+### Volume Mappings
+
+The following directories are mapped from host to container:
+- `./logs` → `/app/logs` - Application logs and debug output
+- `./outputs` → `/app/outputs` - Visualization outputs, videos, plots
+- `./data` → `/app/data` - Input data and datasets
+- `./third_party/models` → `/app/third_party/models` - Model weights
+- `./configs` → `/app/configs` - Configuration files
+
 ## TANGO Demo
 Download official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) following their instructions. Place (or synlink) it at `./data/`.
 
