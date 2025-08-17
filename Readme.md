@@ -157,6 +157,25 @@ The depth anything model weights are located at: https://huggingface.co/spaces/L
 And also grab the vit from here https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints
 place them in third_party/models/
 
+## Download maps and graphs
+
+### HM3D
+
+Download the validation files from the official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) repository:
+
+- **hm3d-val-glb-v0.2.tar** (4G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-glb-v0.2.tar)
+- **hm3d-val-habitat-v0.2.tar** (3.3G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-habitat-v0.2.tar)
+- **hm3d-val-semantic-annots-v0.2.tar** (2.0G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-semantic-annots-v0.2.tar)
+- **hm3d-val-semantic-configs-v0.2.tar** (40K) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-semantic-configs-v0.2.tar)
+
+Place these files in `./data/val/hm3d_v0.2` directory.
+
+### Test trajectory
+
+Download our test trajectory data hm3d_iin_val - [Download](https://drive.google.com/file/d/18yhsuz52QvWQ8gQHeWXLAaqoa6T6jk0O/view).
+
+Place or simlink these files in `./data/hm3d_iin_val` directory.
+
 ## Docker Setup (Alternative)
 
 ### Prerequisites
@@ -189,9 +208,6 @@ The following directories are mapped from host to container:
 - `./configs` → `/app/configs` - Configuration files
 
 ## TANGO Demo
-Download official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) following their instructions. Place (or synlink) it at `./data/`.
-
-Unzip test data: `unzip data/hm3d_iin_val.zip -d ./data/`
 
 ```commandline
 python -m scripts.run_goal_control_demo
