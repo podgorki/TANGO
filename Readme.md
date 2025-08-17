@@ -101,35 +101,42 @@ This repository contains the TANGO controller, and supports testing the `gt_metr
 [2] PixNav-Cai et al., Bridging zero-shot object navigation and foundation models through pixel-guided navigation skill, CVPR 2024
 
 
-## Installation 
+## Prerequisites
 
-Clone this repo - recursive is required for Depth Anything
-```commandline
+- Ubuntu 20.04+ or similar Linux distribution
+- Python 3.10
+- NVIDIA GPU with CUDA 11.8+ support
+- At least 8GB GPU memory recommended
+- 20GB+ free disk space
+
+## Installation
+
+Choose one of the following installation methods:
+
+### Option 1: Native Installation (Recommended for Development)
+
+#### 1. Clone Repository
+```bash
 git clone --recursive https://github.com/podgorki/TANGO.git
 cd TANGO
 ```
 
-### Create new environment
-
-```commandline
+#### 2. Create Python Environment
+```bash
 python3.10 -m venv .venv --prompt tango
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 ```
 
-## Install controller and sim (required for demo)
-
-### Pre-install habitat-sim
-
-#### Dependencies
-```commandline
+#### 3. Install System Dependencies
+```bash
 sudo apt-get install -y --no-install-recommends libjpeg-dev libglm-dev libgl1-mesa-glx libegl1-mesa-dev mesa-utils xorg-dev freeglut3-dev
 pip install cmake==3.14.4
-pip install "numpy>=1.25,<2" --upgrade  # required before building habitat-sim
+pip install "numpy>=1.25,<2" --upgrade
 ```
 
-#### Clone and build the Sim (takes a bit)
-```commandline
+#### 4. Build Habitat-Sim
+```bash
 cd third-party/
 git clone https://github.com/facebookresearch/habitat-sim.git
 cd habitat-sim/
@@ -138,24 +145,54 @@ python setup.py install --cmake
 cd ../..
 ```
 
-### Install TANGO
-
-```commandLine
+#### 5. Install TANGO
+```bash
 pip install -e ".[habitat-lab]" --extra-index-url https://download.pytorch.org/whl/cu128 --prefer-binary
-``` 
+```
 
-### Depth anything
-Depth anything is installed by submoduling.
-
-Add a pth so you can resolve zoedepth
-```commandline
+#### 6. Configure Depth Anything
+```bash
 echo "$PWD/third_party/depth_anything/metric_depth" > \
      $(python -c "import site, sys; print(site.getsitepackages()[0])")/zoedepth_local.pth
 ```
 
+#### 7. Download Model Weights
 The depth anything model weights are located at: https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints_metric_depth
 And also grab the vit from here https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints
 place them in third_party/models/
+
+### Option 2: Docker Installation (Recommended for Reproducibility)
+
+#### Prerequisites
+- Docker >= 20.10.0 with NVIDIA Container Toolkit ([installation guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html))
+- Docker Compose >= 2.0.0
+- NVIDIA GPU drivers
+
+#### Setup
+1. **Clone repository:**
+   ```bash
+   git clone --recursive https://github.com/podgorki/TANGO.git
+   cd TANGO
+   ```
+
+2. **Configure display forwarding:**
+   ```bash
+   xhost +local:docker
+   touch /tmp/.docker.xauth
+   chmod 666 /tmp/.docker.xauth
+   ```
+
+3. **Build and run:**
+   ```bash
+   docker-compose up --build
+   ```
+
+#### Volume Mappings
+- `./logs` → Application logs and debug output
+- `./outputs` → Visualization outputs, videos, plots
+- `./data` → Input data and datasets
+- `./third_party/models` → Model weights
+- `./configs` → Configuration files
 
 ## Download maps and graphs
 
@@ -176,41 +213,24 @@ Download our test trajectory data hm3d_iin_val - [Download](https://drive.google
 
 Place or simlink these files in `./data/hm3d_iin_val` directory.
 
-## Docker Setup (Alternative)
+## Running TANGO Demo
 
-### Prerequisites
+**Ensure you have downloaded the data and models as per [Download maps and graphs](#download-maps-and-graphs) section**
 
-- Docker >= 20.10.0 with NVIDIA Container Toolkit installed ([installation guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html))
-- Docker Compose >= 2.0.0
-- NVIDIA GPU drivers
-
-### Quick Start
-
-1. **Set up X11 display forwarding:**
-   ```bash
-   xhost +local:docker
-   touch /tmp/.docker.xauth
-   chmod 666 /tmp/.docker.xauth
-   ```
-
-2. **Build and run the container:**
-   ```bash
-   docker-compose up --build
-   ```
-
-### Volume Mappings
-
-The following directories are mapped from host to container:
-- `./logs` → `/app/logs` - Application logs and debug output
-- `./outputs` → `/app/outputs` - Visualization outputs, videos, plots
-- `./data` → `/app/data` - Input data and datasets
-- `./third_party/models` → `/app/third_party/models` - Model weights
-- `./configs` → `/app/configs` - Configuration files
-
-## TANGO Demo
-
-```commandline
+**For Native Installation:**
+```bash
+source .venv/bin/activate
 python -m scripts.run_goal_control_demo
+```
+
+**For Docker:**
+```bash
+docker-compose up
+```
+
+Or run with custom config:
+```bash
+docker-compose run --rm tango python scripts/run_goal_control_demo.py --config_file configs/custom.yaml
 ```
 
 ## BibTex
