@@ -109,6 +109,25 @@ This repository contains the TANGO controller, and supports testing the `gt_metr
 - At least 8GB GPU memory recommended
 - 20GB+ free disk space
 
+## Download maps and graphs
+
+### HM3D
+
+Download the validation files from the official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) repository:
+
+- **hm3d-val-glb-v0.2.tar** (4G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-glb-v0.2.tar)
+- **hm3d-val-habitat-v0.2.tar** (3.3G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-habitat-v0.2.tar)
+- **hm3d-val-semantic-annots-v0.2.tar** (2.0G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-semantic-annots-v0.2.tar)
+- **hm3d-val-semantic-configs-v0.2.tar** (40K) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-semantic-configs-v0.2.tar)
+
+Place these files in `./data/val/hm3d_v0.2` directory.
+
+### Test trajectory
+
+Download our test trajectory data hm3d_iin_val - [Download](https://drive.google.com/file/d/18yhsuz52QvWQ8gQHeWXLAaqoa6T6jk0O/view).
+
+Place or simlink these files in `./data/hm3d_iin_val` directory.
+
 ## Installation
 
 Choose one of the following installation methods:
@@ -193,25 +212,6 @@ place them in third_party/models/
 - `./data` → Input data and datasets
 - `./third_party/models` → Model weights
 - `./configs` → Configuration files
-
-## Download maps and graphs
-
-### HM3D
-
-Download the validation files from the official [hm3d v0.2](https://github.com/matterport/habitat-matterport-3dresearch) repository:
-
-- **hm3d-val-glb-v0.2.tar** (4G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-glb-v0.2.tar)
-- **hm3d-val-habitat-v0.2.tar** (3.3G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-habitat-v0.2.tar)
-- **hm3d-val-semantic-annots-v0.2.tar** (2.0G) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-semantic-annots-v0.2.tar)
-- **hm3d-val-semantic-configs-v0.2.tar** (40K) - [Download](https://api.matterport.com/resources/habitat/hm3d-val-semantic-configs-v0.2.tar)
-
-Place these files in `./data/val/hm3d_v0.2` directory.
-
-### Test trajectory
-
-Download our test trajectory data hm3d_iin_val - [Download](https://drive.google.com/file/d/18yhsuz52QvWQ8gQHeWXLAaqoa6T6jk0O/view).
-
-Place or simlink these files in `./data/hm3d_iin_val` directory.
 
 ## Running TANGO Demo
 
