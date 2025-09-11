@@ -200,11 +200,16 @@ python -m scripts.run_goal_control_demo
 ## BibTex
 Please cite our paper if you find it helpful :)
 ```
-@inproceedings{podgorski2025tango,
-  title={TANGO: Traversablility-Aware Navigation with Local Metric Control for Topological Goals},
+@INPROCEEDINGS{11127998,
   author={Podgorski, Stefan and Garg, Sourav and Hosseinzadeh, Mehdi and Mares, Lachlan and Dayoub, Feras and Reid, Ian},
-  booktitle={2025 IEEE International Conference on Robotics and Automation (ICRA)},
+  booktitle={2025 IEEE International Conference on Robotics and Automation (ICRA)}, 
+  title={TANGO: Traversability-Aware Navigation with Local Metric Control for Topological Goals}, 
   year={2025},
-  organization={IEEE}
+  volume={},
+  number={},
+  pages={2399-2406},
+  keywords={Measurement;Visualization;Image segmentation;Three-dimensional displays;Navigation;Source coding;Pipelines;Trajectory;Planning;Robots},
+  doi={10.1109/ICRA55743.2025.11127998}
 }
+
 ```
