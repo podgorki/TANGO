@@ -1,5 +1,9 @@
 # TANGO: Traversability-Aware Navigation with Local Metric Control for Topological Goals [ICRA 2025]
 
+## Related Work
+
+[[CoRL'25]](https://object-react.github.io/) | RoboHop [[ICRA'24]](https://oravus.github.io/RoboHop/)
+
 <img width="1200" alt="image" src="./data/tango_pipeline.JPG">
 
 <img width="1200" alt="image" src="./data/tango_teaser.png">
