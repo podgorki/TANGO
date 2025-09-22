@@ -199,7 +199,9 @@ python -m scripts.run_goal_control_demo
 ```
 
 ## BibTex
-Please cite our paper if you find it helpful :)
+Please cite our paper's if you find them helpful :)
+
+TANGO
 ```
 @INPROCEEDINGS{11127998,
   author={Podgorski, Stefan and Garg, Sourav and Hosseinzadeh, Mehdi and Mares, Lachlan and Dayoub, Feras and Reid, Ian},
@@ -212,5 +214,28 @@ Please cite our paper if you find it helpful :)
   keywords={Measurement;Visualization;Image segmentation;Three-dimensional displays;Navigation;Source coding;Pipelines;Trajectory;Planning;Robots},
   doi={10.1109/ICRA55743.2025.11127998}
 }
+```
 
+ObjectReact
+```
+@inproceedings{podgorski2025tango,
+  title={TANGO: Traversability-Aware Navigation with Local Metric Control for Topological Goals},
+  author={Podgorski, Stefan and Garg, Sourav and Hosseinzadeh, Mehdi and Mares, Lachlan and Dayoub, Feras and Reid, Ian},
+  booktitle={2025 IEEE International Conference on Robotics and Automation (ICRA)},
+  pages={2399--2406},
+  year={2025},
+  organization={IEEE}
+}
+```
+
+Robohop
+```
+@inproceedings{garg2024robohop,
+  title={Robohop: Segment-based topological map representation for open-world visual navigation},
+  author={Garg, Sourav and Rana, Krishan and Hosseinzadeh, Mehdi and Mares, Lachlan and S{\"u}nderhauf, Niko and Dayoub, Feras and Reid, Ian},
+  booktitle={2024 IEEE International Conference on Robotics and Automation (ICRA)},
+  pages={4090--4097},
+  year={2024},
+  organization={IEEE}
+}
 ```
